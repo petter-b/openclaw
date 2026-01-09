@@ -208,7 +208,7 @@ When multiple agents work in parallel:
 | E2E patterns | `test/**/*.e2e.test.ts` |
 | Test helpers | `src/gateway/test-helpers.ts` |
 | CLI commands | `package.json` scripts |
-| Slash commands | `.claude/dev/` |
+| Slash commands | `.claude/commands/dev/` |
 
 ### Workflow Documentation
 
