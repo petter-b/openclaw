@@ -1,6 +1,5 @@
 node_modules
 .env
-docker-compose.extra.yml
 dist
 *.bun-build
 pnpm-lock.yaml
@@ -55,6 +54,3 @@ apps/ios/*.mobileprovision
 # Local untracked files
 .local/
 .vscode/
-
-# Fork-local experimental docs (not for upstream)
-docs/local/
