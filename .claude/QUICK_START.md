@@ -1,7 +1,7 @@
 # Quick Start
 
 ## First Steps
-1. Read root `CLAUDE.md` - coding standards (source of truth)
+1. Read root `AGENTS.md` - coding standards (source of truth)
 2. Check `package.json` - available scripts
 3. Run `/help` - see available slash commands
 

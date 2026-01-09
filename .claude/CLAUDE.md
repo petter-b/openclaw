@@ -27,7 +27,7 @@
 | Writing tests | `.workflow/contributing/tdd-workflow.md` |
 | Writing E2E tests | `.workflow/contributing/e2e-testing.md` |
 | Multi-agent setup | `.workflow/automation/agent-automation.md` |
-| Something broken | `.workflow/TROUBLESHOOTING.md` |
+| Something broken | `.workflow/AGENTS.md#troubleshooting` |
 
 ## Explore Locally
 

@@ -174,6 +174,8 @@ sudo tailscale up --auth-key=tskey-xxx
 
 ### Clawdbot Gateway Deployment
 
+> **Note:** The image `ghcr.io/anthropics/clawdbot:latest` is a placeholder. You must build and push your own image to a container registry before deploying.
+
 Create `k8s/clawdbot-gateway.yaml`:
 
 ```yaml
@@ -610,7 +612,7 @@ pkill -f "clawdbot gateway.*8081"
 
 ### k3s E2E Instance
 
-Deploy a separate E2E gateway in the cluster:
+Deploy a separate E2E gateway in the cluster (uses the same placeholder image as above):
 
 ```yaml
 # k8s/clawdbot-e2e.yaml
@@ -669,7 +671,7 @@ CLAWDBOT_GATEWAY_PORT=8083 pnpm test:e2e --grep "provider"
 
 ### E2E Test Patterns (from upstream)
 
-Key patterns from `src/gateway/gateway.multi.e2e.test.ts`:
+Key patterns from `test/gateway.multi.e2e.test.ts`:
 
 ```typescript
 // Spawn gateway process

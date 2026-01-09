@@ -1,54 +1,8 @@
-# End-to-End Testing Guide
+# E2E Test Patterns Reference
 
-> **Purpose**: Patterns for writing E2E tests in clawdbot.
-> **Source of truth**: `test/gateway.multi.e2e.test.ts` - explore this file for current implementations.
+> Source of truth: `test/gateway.multi.e2e.test.ts`
 
-## Explore First
-
-Before starting, check current state locally:
-
-| Concern | Where to look |
-|---------|---------------|
-| E2E config | `vitest.e2e.config.ts` |
-| E2E test examples | `test/**/*.e2e.test.ts` |
-| Test isolation setup | `test/setup.ts` |
-| Gateway test helpers | `src/gateway/test-helpers.ts` |
-| Live test examples | `src/**/*.live.test.ts` |
-
----
-
-## Configuration
-
-| File | Purpose |
-|------|---------|
-| `vitest.e2e.config.ts` | E2E test config |
-| `test/setup.ts` | Global setup (temp HOME isolation) |
-| `test/gateway.multi.e2e.test.ts` | Main E2E test - reference implementation |
-
-### Run E2E Tests
-
-```bash
-pnpm test:e2e
-```
-
-### E2E vs Unit Tests
-
-| Aspect | Unit Tests | E2E Tests |
-|--------|-----------|-----------|
-| Location | `src/**/*.test.ts` | `test/**/*.e2e.test.ts` |
-| Config | `vitest.config.ts` | `vitest.e2e.config.ts` |
-| Isolation | Mocked dependencies | Real processes |
-| Speed | Fast (ms) | Slow (seconds) |
-| Timeout | Default 10s | Extended 120s |
-
----
-
-## Core E2E Patterns
-
-> These patterns are extracted from `test/gateway.multi.e2e.test.ts`.
-> Check that file for the current implementation - signatures may evolve.
-
-### Pattern 1: Ephemeral Port Allocation
+## Pattern 1: Ephemeral Port Allocation
 
 ```typescript
 const getFreePort = async () => {
@@ -64,18 +18,25 @@ const getFreePort = async () => {
 };
 ```
 
-### Pattern 2: Port Readiness Polling
+## Pattern 2: Port Readiness with Error Capture
 
 ```typescript
 const waitForPortOpen = async (
   proc: ChildProcessWithoutNullStreams,
+  chunksOut: string[],
+  chunksErr: string[],
   port: number,
   timeoutMs: number,
 ) => {
   const startedAt = Date.now();
   while (Date.now() - startedAt < timeoutMs) {
     if (proc.exitCode !== null) {
-      throw new Error(`process exited before listening`);
+      const stdout = chunksOut.join("");
+      const stderr = chunksErr.join("");
+      throw new Error(
+        `gateway exited before listening (code=${String(proc.exitCode)})\n` +
+          `--- stdout ---\n${stdout}\n--- stderr ---\n${stderr}`,
+      );
     }
     try {
       await new Promise<void>((resolve, reject) => {
@@ -92,7 +53,7 @@ const waitForPortOpen = async (
 };
 ```
 
-### Pattern 3: Process Spawning with Isolation
+## Pattern 3: Process Spawning with Isolation
 
 ```typescript
 const spawnGatewayInstance = async (name: string): Promise<GatewayInstance> => {
@@ -113,7 +74,7 @@ const spawnGatewayInstance = async (name: string): Promise<GatewayInstance> => {
     env: {
       ...process.env,
       HOME: homeDir,
-      // See Environment Variables section for full list
+      // See env-vars.md for full list
     },
     stdio: ["ignore", "pipe", "pipe"],
   });
@@ -124,12 +85,12 @@ const spawnGatewayInstance = async (name: string): Promise<GatewayInstance> => {
   child.stdout?.on("data", (d) => stdout.push(String(d)));
   child.stderr?.on("data", (d) => stderr.push(String(d)));
 
-  await waitForPortOpen(child, port, GATEWAY_START_TIMEOUT_MS);
+  await waitForPortOpen(child, stdout, stderr, port, GATEWAY_START_TIMEOUT_MS);
   return { name, port, homeDir, child, stdout, stderr };
 };
 ```
 
-### Pattern 4: Graceful Cleanup
+## Pattern 4: Graceful Cleanup
 
 ```typescript
 const stopGatewayInstance = async (inst: GatewayInstance) => {
@@ -168,7 +129,7 @@ describe("e2e tests", () => {
 });
 ```
 
-### Pattern 5: CLI JSON Output Testing
+## Pattern 5: CLI JSON Output Testing
 
 ```typescript
 const runCliJson = async (args: string[], env: NodeJS.ProcessEnv): Promise<unknown> => {
@@ -203,42 +164,16 @@ const health = await runCliJson(
 expect(health.ok).toBe(true);
 ```
 
----
-
-## Environment Variables for E2E
-
-See `test/gateway.multi.e2e.test.ts` for the full current list. Common ones:
-
-| Variable | Purpose |
-|----------|---------|
-| `HOME` | Isolated home directory |
-| `CLAWDBOT_CONFIG_PATH` | Config file location |
-| `CLAWDBOT_STATE_DIR` | State directory |
-| `CLAWDBOT_GATEWAY_TOKEN` | Auth token (empty for no auth) |
-| `CLAWDBOT_SKIP_PROVIDERS` | Skip provider initialization |
-| `CLAWDBOT_SKIP_BROWSER_CONTROL_SERVER` | Skip browser server |
-| `CLAWDBOT_SKIP_CANVAS_HOST` | Skip canvas host |
-| `CLAWDBOT_ENABLE_BRIDGE_IN_TESTS` | Enable bridge for testing |
-
----
-
-## Debugging E2E Tests
+## Debugging Tips
 
 ### Capture Output
-
 ```typescript
-const stdout: string[] = [];
-const stderr: string[] = [];
-child.stdout?.on("data", (d) => stdout.push(String(d)));
-child.stderr?.on("data", (d) => stderr.push(String(d)));
-
 // On failure, log captured output
 console.log("stdout:", stdout.join(""));
 console.log("stderr:", stderr.join(""));
 ```
 
 ### Increase Timeout
-
 ```typescript
 it("slow test", { timeout: 300_000 }, async () => {
   // 5 minute timeout
@@ -246,15 +181,4 @@ it("slow test", { timeout: 300_000 }, async () => {
 ```
 
 ### Keep Instance Running
-
-Comment out cleanup in `afterAll` to inspect state:
-
-```typescript
-afterAll(async () => {
-  // Temporarily disabled for debugging
-  // for (const inst of instances) {
-  //   await stopInstance(inst);
-  // }
-  console.log("Instances still running:", instances.map(i => i.port));
-});
-```
+Comment out cleanup in `afterAll` to inspect state after test failure.

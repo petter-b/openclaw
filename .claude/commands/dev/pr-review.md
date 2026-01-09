@@ -1,5 +1,5 @@
 ---
-description: Review a PR from upstream (read-only)
+description: Review a PR from upstream (uses reviewing-code skill)
 allowed-tools: Bash(gh:*), Read, Glob, Grep, WebFetch
 argument-hint: <pr-number>
 success-criteria: |
@@ -12,7 +12,7 @@ success-criteria: |
 
 # PR Review
 
-Review PR #$1 from clawdbot/clawdbot.
+Review PR #$1 from clawdbot/clawdbot using the `reviewing-code` skill.
 
 **IMPORTANT: Read-only review. Do NOT checkout the branch or modify any code.**
 
@@ -24,34 +24,9 @@ gh pr view $1 --repo clawdbot/clawdbot
 gh pr diff $1 --repo clawdbot/clawdbot
 ```
 
-### 2. Review Checklist
+### 2. Apply Review Checklist
 
-**Security:**
-- [ ] Input validation on user data
-- [ ] No injection vulnerabilities (SQL, command, XSS)
-- [ ] No secrets/credentials in code
-- [ ] Safe file operations
-
-**Code Quality:**
-- [ ] Error handling for edge cases
-- [ ] Type safety (no `any` unless justified)
-- [ ] Follows existing patterns in codebase
-- [ ] Files under ~700 LOC
-
-**Style:**
-- [ ] No over-engineering
-- [ ] No unrelated refactoring bundled in
-- [ ] Clear naming and structure
-
-**Tests:**
-- [ ] New/changed behavior has tests
-- [ ] Tests are meaningful (not just coverage padding)
-- [ ] Edge cases covered
-
-**Documentation:**
-- [ ] CHANGELOG entry with PR # exists
-- [ ] Contributor thanked if external
-- [ ] Code comments for non-obvious logic
+Apply the `reviewing-code` skill checklists (security, quality, style, tests, docs).
 
 ### 3. Summarize Findings
 

@@ -81,6 +81,7 @@ Available hook events:
 - `PostToolUse` - After tool execution
 - `SessionStart` - When session begins
 - `SessionEnd` - When session ends
+- `Stop` - After agent stops (can run quality checks)
 
 Example Stop hook for quality gate:
 
@@ -118,36 +119,36 @@ Slash commands are implemented in `.claude/commands/dev/`. These are ready to us
 
 | Command | File | Purpose |
 |---------|------|---------|
-| `/gate` | `.claude/commands/dev/gate.md` | Quality gate (lint, build, test) |
-| `/test` | `.claude/commands/dev/test.md` | Run tests with coverage/pattern options |
-| `/e2e` | `.claude/commands/dev/e2e.md` | End-to-end tests |
-| `/commit` | `.claude/commands/dev/commit.md` | Safe commit using scripts/committer |
-| `/tdd` | `.claude/commands/dev/tdd.md` | TDD workflow (red/green/refactor phases) |
-| `/coverage` | `.claude/commands/dev/coverage.md` | Coverage analysis |
+| `/dev:gate` | `.claude/commands/dev/gate.md` | Quality gate (lint, build, test) |
+| `/dev:test` | `.claude/commands/dev/test.md` | Run tests with coverage/pattern options |
+| `/dev:e2e` | `.claude/commands/dev/e2e.md` | End-to-end tests |
+| `/dev:commit` | `.claude/commands/dev/commit.md` | Safe commit using scripts/committer |
+| `/dev:tdd` | `.claude/commands/dev/tdd.md` | TDD workflow (red/green/refactor phases) |
+| `/dev:coverage` | `.claude/commands/dev/coverage.md` | Coverage analysis |
 
 ### Usage Examples
 
 ```bash
 # Run quality gate before committing
-/gate
+/dev:gate
 
 # Run tests with coverage
-/test --coverage
+/dev:test --coverage
 
 # Run specific test file
-/test auth
+/dev:test auth
 
 # TDD workflow - write failing tests first
-/tdd red "user authentication"
+/dev:tdd red "user authentication"
 
 # TDD workflow - implement to pass tests
-/tdd green auth
+/dev:tdd green auth
 
 # Safe commit with specific files
-/commit "feat: add auth module" src/auth.ts src/auth.test.ts
+/dev:commit "feat: add auth module" src/auth.ts src/auth.test.ts
 
 # Analyze coverage gaps
-/coverage src/gateway
+/dev:coverage src/gateway
 ```
 
 ### Adding New Commands

@@ -1,5 +1,5 @@
 ---
-description: TDD workflow - write tests first, then implement
+description: TDD workflow - explicit phase control (uses writing-tests skill)
 allowed-tools: Bash(pnpm:*), Read, Write, Edit, Glob, Grep
 argument-hint: <phase> [feature-description]
 success-criteria: |
@@ -10,7 +10,7 @@ success-criteria: |
 
 # TDD Workflow
 
-Follow Test-Driven Development for the specified feature.
+Execute a specific TDD phase. For patterns and helpers, see the `writing-tests` skill.
 
 **Phase:** $1 (red | green | refactor)
 **Feature:** $2
@@ -18,32 +18,20 @@ Follow Test-Driven Development for the specified feature.
 ## Phases
 
 ### red - Write Failing Tests
-1. Explore `src/**/*.test.ts` for existing patterns
-2. Create test file following `<feature>.test.ts` naming
-3. Write comprehensive test cases (expected inputs/outputs)
-4. Run `pnpm test --run` - confirm tests FAIL
-5. Do NOT write implementation yet
+1. Create test file following `<feature>.test.ts` naming
+2. Write comprehensive test cases
+3. Run `pnpm test --run` - confirm tests FAIL
+4. Do NOT write implementation yet
 
 ### green - Make Tests Pass
-1. Read the test file to understand requirements
-2. Write MINIMAL code to pass all tests
-3. Run `pnpm test --run` repeatedly until green
-4. Do NOT refactor or add extra features
+1. Write MINIMAL code to pass all tests
+2. Run `pnpm test --run` repeatedly until green
+3. Do NOT refactor or add extra features
 
 ### refactor - Improve Code
 1. All tests must be green first
 2. Improve code structure, naming, DRY
 3. Run `pnpm test --run` after each change
-4. Run `pnpm lint` to check style
-5. Keep tests passing throughout
-
-**From CLAUDE.md:**
-- Aim for 70% coverage
-- Keep files under ~700 LOC
-- Extract helpers instead of "V2" copies
+4. Keep tests passing throughout
 
 Report which phase completed and next steps.
-
-## Explore
-- Existing tests: `src/**/*.test.ts`
-- Test helpers: search for `describe(` patterns

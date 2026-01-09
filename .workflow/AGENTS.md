@@ -3,6 +3,38 @@
 > **You are in `clawdbot-dev`** (private fork). This is the primary development environment.
 > PRs flow: `dev` → `fork` (public) → `upstream` (clawdbot/clawdbot)
 
+## Directory Structure
+
+```
+.workflow/
+├── AGENTS.md               # This file - main workflow guide
+└── automation/
+    ├── agent-automation.md # Multi-agent coordination
+    └── infrastructure.md   # Mac mini + k3s + Tailscale
+
+.claude/
+├── CLAUDE.md               # Points here
+├── settings.json           # Permissions and hooks
+├── commands/dev/           # Slash commands (dev:*)
+├── skills/                 # Auto-applied knowledge
+│   ├── writing-tests/      # TDD patterns
+│   ├── e2e-testing/        # E2E patterns
+│   └── reviewing-code/     # Code review checklists
+└── hooks/pre-bash.sh       # Pre-bash validation
+```
+
+### What Stays in Dev Repo (Never Push to Fork/Upstream)
+
+| Content | Location |
+|---------|----------|
+| Workflow docs | `.workflow/` |
+| Claude Code config | `.claude/` |
+| Setup scripts | `scripts/setup-*.sh` |
+
+**Explore locally:** `CLAUDE.md` (root) for project standards, `package.json` for commands, `src/**/*.test.ts` for test patterns.
+
+---
+
 ## Quick Start
 
 ```bash
@@ -155,7 +187,7 @@ git branch -D temp/test-pr-123
 
 ### Before Every Commit
 ```bash
-/dev:gate   # or manually: pnpm lint && pnpm build && pnpm test
+/dev:gate   # or manually: pnpm lint && pnpm build && pnpm test --run
 ```
 
 ### PR Title Format (Conventional Commits)
@@ -210,15 +242,58 @@ When multiple agents work in parallel:
 | CLI commands | `package.json` scripts |
 | Slash commands | `.claude/commands/dev/` |
 
+### Skills (Auto-Applied)
+
+| Skill | Triggers When |
+|-------|---------------|
+| `writing-tests` | Writing or modifying tests, implementing features |
+| `e2e-testing` | Writing integration tests, spawning processes |
+| `reviewing-code` | After significant code changes, before commits |
+
 ### Workflow Documentation
 
 | Trigger | Document |
 |---------|----------|
-| Writing tests | `contributing/tdd-workflow.md` |
-| Writing E2E tests | `contributing/e2e-testing.md` |
 | Multi-agent setup | `automation/agent-automation.md` |
 | Infrastructure | `automation/infrastructure.md` |
-| Something broken | `TROUBLESHOOTING.md` |
+
+---
+
+## Troubleshooting
+
+### Tests Timeout
+Tests hanging or taking >30 seconds usually means stuck processes or port conflicts.
+
+```bash
+pgrep -f clawdbot          # Check for stuck gateway processes
+pkill -f clawdbot          # Kill them
+lsof -i :8080              # Check if port is in use
+```
+
+### E2E "Connection Refused"
+Gateway not running. The `/dev:e2e` command spawns it automatically via `pnpm test:e2e`.
+
+If running manually, ensure gateway is started first.
+
+### Worktree Conflicts
+"Branch already checked out" errors occur when multiple agents try to use the same branch.
+
+```bash
+git worktree list          # See all worktrees
+git worktree remove <path> # Remove a stuck worktree
+```
+
+Each agent should have its own worktree under `.worktrees/`.
+
+### Lint Fails
+Biome formatting issues can often be auto-fixed.
+
+```bash
+pnpm format                # Auto-fix formatting
+pnpm lint                  # See remaining issues
+```
+
+**Explore:** `biome.json` for lint rules.
 
 ---
 
