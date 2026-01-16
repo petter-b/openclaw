@@ -8,14 +8,13 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 echo "=== Clawdbot Auth System Setup ==="
 echo ""
 
 # Step 1: Check current auth status
 echo "Step 1: Checking current auth status..."
-"$REPO_ROOT/scripts/claude-auth-status.sh" full || true
+"$SCRIPT_DIR/claude-auth-status.sh" full || true
 echo ""
 
 # Step 2: Set up long-lived token
@@ -62,7 +61,7 @@ echo "Enter your phone number for alerts (or leave blank to skip):"
 read -r PHONE_NUMBER
 
 # Update service file
-SERVICE_FILE="$REPO_ROOT/scripts/systemd/clawdbot-auth-monitor.service"
+SERVICE_FILE="$SCRIPT_DIR/systemd/clawdbot-auth-monitor.service"
 if [ -n "$NTFY_TOPIC" ]; then
     sed -i "s|# Environment=NOTIFY_NTFY=.*|Environment=NOTIFY_NTFY=$NTFY_TOPIC|" "$SERVICE_FILE"
 fi
@@ -74,8 +73,8 @@ fi
 echo ""
 echo "Installing systemd timer..."
 mkdir -p ~/.config/systemd/user
-cp "$REPO_ROOT/scripts/systemd/clawdbot-auth-monitor.service" ~/.config/systemd/user/
-cp "$REPO_ROOT/scripts/systemd/clawdbot-auth-monitor.timer" ~/.config/systemd/user/
+cp "$SCRIPT_DIR/systemd/clawdbot-auth-monitor.service" ~/.config/systemd/user/
+cp "$SCRIPT_DIR/systemd/clawdbot-auth-monitor.timer" ~/.config/systemd/user/
 systemctl --user daemon-reload
 systemctl --user enable --now clawdbot-auth-monitor.timer
 
@@ -92,8 +91,8 @@ echo "2. Create ~/.shortcuts/ directory in Termux:"
 echo "   mkdir -p ~/.shortcuts"
 echo ""
 echo "3. Copy the widget scripts:"
-echo "   scp $REPO_ROOT/scripts/termux-quick-auth.sh phone:~/.shortcuts/ClawdAuth"
-echo "   scp $REPO_ROOT/scripts/termux-auth-widget.sh phone:~/.shortcuts/ClawdAuth-Full"
+echo "   scp $SCRIPT_DIR/termux-quick-auth.sh phone:~/.shortcuts/ClawdAuth"
+echo "   scp $SCRIPT_DIR/termux-auth-widget.sh phone:~/.shortcuts/ClawdAuth-Full"
 echo ""
 echo "4. Make them executable on phone:"
 echo "   ssh phone 'chmod +x ~/.shortcuts/Clawd*'"
@@ -109,12 +108,12 @@ echo ""
 echo "=== Setup Complete ==="
 echo ""
 echo "What's configured:"
-echo "  - Auth status: $REPO_ROOT/scripts/claude-auth-status.sh"
-echo "  - Mobile re-auth: $REPO_ROOT/scripts/mobile-reauth.sh"
+echo "  - Auth status: $SCRIPT_DIR/claude-auth-status.sh"
+echo "  - Mobile re-auth: $SCRIPT_DIR/mobile-reauth.sh"
 echo "  - Auth monitor: systemctl --user status clawdbot-auth-monitor.timer"
 echo ""
 echo "Quick commands:"
-echo "  Check auth:  $REPO_ROOT/scripts/claude-auth-status.sh"
-echo "  Re-auth:     $REPO_ROOT/scripts/mobile-reauth.sh"
-echo "  Test monitor: $REPO_ROOT/scripts/auth-monitor.sh"
+echo "  Check auth:  $SCRIPT_DIR/claude-auth-status.sh"
+echo "  Re-auth:     $SCRIPT_DIR/mobile-reauth.sh"
+echo "  Test monitor: $SCRIPT_DIR/auth-monitor.sh"
 echo ""
