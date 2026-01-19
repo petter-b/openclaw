@@ -30,6 +30,7 @@ export type PluginLoadOptions = {
   logger?: PluginLogger;
   coreGatewayHandlers?: Record<string, GatewayRequestHandler>;
   cache?: boolean;
+  mode?: "full" | "validate";
 };
 
 type NormalizedPluginsConfig = {
@@ -101,8 +102,10 @@ const normalizePluginsConfig = (config?: ClawdbotConfig["plugins"]): NormalizedP
 
 const resolvePluginSdkAlias = (): string | null => {
   try {
-    const preferDist = process.env.VITEST || process.env.NODE_ENV === "test";
-    let cursor = path.dirname(fileURLToPath(import.meta.url));
+    const modulePath = fileURLToPath(import.meta.url);
+    const isDistRuntime = modulePath.split(path.sep).includes("dist");
+    const preferDist = process.env.VITEST || process.env.NODE_ENV === "test" || isDistRuntime;
+    let cursor = path.dirname(modulePath);
     for (let i = 0; i < 6; i += 1) {
       const srcCandidate = path.join(cursor, "src", "plugin-sdk", "index.ts");
       const distCandidate = path.join(cursor, "dist", "plugin-sdk", "index.js");
@@ -297,6 +300,7 @@ function pushDiagnostics(diagnostics: PluginDiagnostic[], append: PluginDiagnost
 export function loadClawdbotPlugins(options: PluginLoadOptions = {}): PluginRegistry {
   const cfg = options.config ?? {};
   const logger = options.logger ?? defaultLogger();
+  const validateOnly = options.mode === "validate";
   const normalized = normalizePluginsConfig(cfg.plugins);
   const cacheKey = buildCacheKey({
     workspaceDir: options.workspaceDir,
@@ -437,6 +441,21 @@ export function loadClawdbotPlugins(options: PluginLoadOptions = {}): PluginRegi
           >)
         : undefined;
 
+    if (!definition?.configSchema) {
+      logger.error(`[plugins] ${record.id} missing config schema`);
+      record.status = "error";
+      record.error = "missing config schema";
+      registry.plugins.push(record);
+      seenIds.set(candidate.idHint, candidate.origin);
+      registry.diagnostics.push({
+        level: "error",
+        pluginId: record.id,
+        source: record.source,
+        message: record.error,
+      });
+      continue;
+    }
+
     if (record.kind === "memory" && memorySlot === record.id) {
       memorySlotMatched = true;
     }
@@ -478,6 +497,12 @@ export function loadClawdbotPlugins(options: PluginLoadOptions = {}): PluginRegi
         source: record.source,
         message: record.error,
       });
+      continue;
+    }
+
+    if (validateOnly) {
+      registry.plugins.push(record);
+      seenIds.set(candidate.idHint, candidate.origin);
       continue;
     }
 

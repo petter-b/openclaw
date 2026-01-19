@@ -2,19 +2,43 @@
 
 Docs: https://docs.clawd.bot
 
+## 2026.1.19-3
+
+### Changes
+- Android: remove legacy bridge transport code now that nodes use the gateway protocol.
+- Android: send structured payloads in node events/invokes and include user-agent metadata in gateway connects.
+
+## 2026.1.19-2
+
+### Changes
+- Android: migrate node transport to the Gateway WebSocket protocol with TLS pinning support + gateway discovery naming.
+- Android: bump okhttp + dnsjava to satisfy lint dependency checks.
+- Docs: refresh Android node discovery docs for the Gateway WS service type.
+
+### Fixes
+- Tests: stabilize Windows gateway/CLI tests by skipping sidecars, normalizing argv, and extending timeouts.
+- CLI: skip runner rebuilds when dist is fresh. (#1231) — thanks @mukhtharcm, @thewilloftheshadow.
+
 ## 2026.1.19-1
+
+### Breaking
+- **BREAKING:** Reject invalid/unknown config entries and refuse to start the gateway for safety; run `clawdbot doctor --fix` to repair. 
 
 ### Changes
 - Usage: add `/usage cost` summaries and macOS menu cost submenu with daily charting.
+- Agents: clarify node_modules read-only guidance in agent instructions.
+- TUI: add syntax highlighting for code blocks. (#1200) — thanks @vignesh07.
 
 ### Fixes
+- UI: enable shell mode for sync Windows spawns to avoid `pnpm ui:build` EINVAL. (#1212) — thanks @longmaba.
+- Agents: add `clawdbot agents set-identity` helper and update bootstrap guidance for multi-agent setups. (#1222) — thanks @ThePickle31.
 - Plugins: surface plugin load/register/config errors in gateway logs with plugin/source context.
-<<<<<<< Updated upstream
 - Agents: propagate accountId into embedded runs so sub-agent announce routing honors the originating account. (#1058)
-||||||| Stash base
-=======
 - Compaction: include tool failure summaries in safeguard compaction to prevent retry loops. (#1084)
->>>>>>> Stashed changes
+- Daemon: include HOME in service environments to avoid missing HOME errors. (#1214) — thanks @ameno-.
+- TUI: show generic empty-state text for searchable pickers. (#1201) — thanks @vignesh07.
+- Doctor: canonicalize legacy session keys in session stores to prevent stale metadata. (#1169)
+- CLI: centralize CLI command registration to keep fast-path routing and program wiring in sync. (#1207) — thanks @gumadeiras.
 
 ## 2026.1.18-5
 
