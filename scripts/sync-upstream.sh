@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Sync local main with upstream and push to fork + dev
+# Sync local main with upstream and push to dev
 
 BRANCH="${1:-main}"
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
@@ -124,15 +124,11 @@ if ! git merge "upstream/$BRANCH" --no-edit; then
     fail "Merge conflict with upstream. Manual resolution needed."
 fi
 
-# Push to remotes
-echo "📤 Pushing to fork..."
-if ! git push fork "$BRANCH"; then
-    fail "Failed to push to fork. Merge succeeded but push failed!"
-fi
-
+# Push to dev (private repo)
+# Note: fork remote is only used for PR branches, not syncing main
 echo "📤 Pushing to dev..."
 if ! git push --force-with-lease dev "$BRANCH"; then
-    fail "Failed to push to dev. Fork updated but dev failed!"
+    fail "Failed to push to dev. Merge succeeded but push failed!"
 fi
 
 # Restore stashed changes
