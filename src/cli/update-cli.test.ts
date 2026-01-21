@@ -31,6 +31,10 @@ vi.mock("../infra/update-check.js", async () => {
   };
 });
 
+vi.mock("../process/exec.js", () => ({
+  runCommandWithTimeout: vi.fn(),
+}));
+
 // Mock doctor (heavy module; should not run in unit tests)
 vi.mock("../commands/doctor.js", () => ({
   doctorCommand: vi.fn(),
@@ -76,6 +80,7 @@ describe("update-cli", () => {
     const { readConfigFileSnapshot } = await import("../config/config.js");
     const { checkUpdateStatus, fetchNpmTagVersion, resolveNpmChannelTag } =
       await import("../infra/update-check.js");
+    const { runCommandWithTimeout } = await import("../process/exec.js");
     vi.mocked(resolveClawdbotPackageRoot).mockResolvedValue(process.cwd());
     vi.mocked(readConfigFileSnapshot).mockResolvedValue(baseSnapshot);
     vi.mocked(fetchNpmTagVersion).mockResolvedValue({
@@ -110,6 +115,13 @@ describe("update-cli", () => {
       registry: {
         latestVersion: "1.2.3",
       },
+    });
+    vi.mocked(runCommandWithTimeout).mockResolvedValue({
+      stdout: "",
+      stderr: "",
+      code: 0,
+      signal: null,
+      killed: false,
     });
     setTty(false);
     setStdoutTty(false);
@@ -202,9 +214,21 @@ describe("update-cli", () => {
 
       const { resolveClawdbotPackageRoot } = await import("../infra/clawdbot-root.js");
       const { runGatewayUpdate } = await import("../infra/update-runner.js");
+      const { checkUpdateStatus } = await import("../infra/update-check.js");
       const { updateCommand } = await import("./update-cli.js");
 
       vi.mocked(resolveClawdbotPackageRoot).mockResolvedValue(tempDir);
+      vi.mocked(checkUpdateStatus).mockResolvedValue({
+        root: tempDir,
+        installKind: "package",
+        packageManager: "npm",
+        deps: {
+          manager: "npm",
+          status: "ok",
+          lockfilePath: null,
+          markerPath: null,
+        },
+      });
       vi.mocked(runGatewayUpdate).mockResolvedValue({
         status: "ok",
         mode: "npm",
@@ -258,11 +282,23 @@ describe("update-cli", () => {
       const { resolveNpmChannelTag } = await import("../infra/update-check.js");
       const { runGatewayUpdate } = await import("../infra/update-runner.js");
       const { updateCommand } = await import("./update-cli.js");
+      const { checkUpdateStatus } = await import("../infra/update-check.js");
 
       vi.mocked(resolveClawdbotPackageRoot).mockResolvedValue(tempDir);
       vi.mocked(readConfigFileSnapshot).mockResolvedValue({
         ...baseSnapshot,
         config: { update: { channel: "beta" } },
+      });
+      vi.mocked(checkUpdateStatus).mockResolvedValue({
+        root: tempDir,
+        installKind: "package",
+        packageManager: "npm",
+        deps: {
+          manager: "npm",
+          status: "ok",
+          lockfilePath: null,
+          markerPath: null,
+        },
       });
       vi.mocked(resolveNpmChannelTag).mockResolvedValue({
         tag: "latest",
@@ -447,6 +483,7 @@ describe("update-cli", () => {
   it("requires confirmation on downgrade when non-interactive", async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "clawdbot-update-"));
     try {
+      setTty(false);
       await fs.writeFile(
         path.join(tempDir, "package.json"),
         JSON.stringify({ name: "clawdbot", version: "2.0.0" }),
@@ -458,8 +495,20 @@ describe("update-cli", () => {
       const { runGatewayUpdate } = await import("../infra/update-runner.js");
       const { defaultRuntime } = await import("../runtime.js");
       const { updateCommand } = await import("./update-cli.js");
+      const { checkUpdateStatus } = await import("../infra/update-check.js");
 
       vi.mocked(resolveClawdbotPackageRoot).mockResolvedValue(tempDir);
+      vi.mocked(checkUpdateStatus).mockResolvedValue({
+        root: tempDir,
+        installKind: "package",
+        packageManager: "npm",
+        deps: {
+          manager: "npm",
+          status: "ok",
+          lockfilePath: null,
+          markerPath: null,
+        },
+      });
       vi.mocked(resolveNpmChannelTag).mockResolvedValue({
         tag: "latest",
         version: "0.0.1",
@@ -479,6 +528,59 @@ describe("update-cli", () => {
         expect.stringContaining("Downgrade confirmation required."),
       );
       expect(defaultRuntime.exit).toHaveBeenCalledWith(1);
+    } finally {
+      await fs.rm(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  it("allows downgrade with --yes in non-interactive mode", async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "clawdbot-update-"));
+    try {
+      setTty(false);
+      await fs.writeFile(
+        path.join(tempDir, "package.json"),
+        JSON.stringify({ name: "clawdbot", version: "2.0.0" }),
+        "utf-8",
+      );
+
+      const { resolveClawdbotPackageRoot } = await import("../infra/clawdbot-root.js");
+      const { resolveNpmChannelTag } = await import("../infra/update-check.js");
+      const { runGatewayUpdate } = await import("../infra/update-runner.js");
+      const { defaultRuntime } = await import("../runtime.js");
+      const { updateCommand } = await import("./update-cli.js");
+      const { checkUpdateStatus } = await import("../infra/update-check.js");
+
+      vi.mocked(resolveClawdbotPackageRoot).mockResolvedValue(tempDir);
+      vi.mocked(checkUpdateStatus).mockResolvedValue({
+        root: tempDir,
+        installKind: "package",
+        packageManager: "npm",
+        deps: {
+          manager: "npm",
+          status: "ok",
+          lockfilePath: null,
+          markerPath: null,
+        },
+      });
+      vi.mocked(resolveNpmChannelTag).mockResolvedValue({
+        tag: "latest",
+        version: "0.0.1",
+      });
+      vi.mocked(runGatewayUpdate).mockResolvedValue({
+        status: "ok",
+        mode: "npm",
+        steps: [],
+        durationMs: 100,
+      });
+      vi.mocked(defaultRuntime.error).mockClear();
+      vi.mocked(defaultRuntime.exit).mockClear();
+
+      await updateCommand({ yes: true });
+
+      expect(defaultRuntime.error).not.toHaveBeenCalledWith(
+        expect.stringContaining("Downgrade confirmation required."),
+      );
+      expect(runGatewayUpdate).toHaveBeenCalled();
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true });
     }

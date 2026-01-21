@@ -22,6 +22,7 @@ import { resolveThreadSessionKeys } from "../../../routing/session-key.js";
 import { resolveMentionGatingWithBypass } from "../../../channels/mention-gating.js";
 import { resolveConversationLabel } from "../../../channels/conversation-label.js";
 import { resolveControlCommandGate } from "../../../channels/command-gating.js";
+import { formatAllowlistMatchMeta } from "../../../channels/allowlist-match.js";
 import {
   readSessionUpdatedAt,
   recordSessionMetaFromInbound,
@@ -131,9 +132,7 @@ export async function prepareSlackMessage(params: {
         allowList: allowFromLower,
         id: directUserId,
       });
-      const allowMatchMeta = `matchKey=${allowMatch.matchKey ?? "none"} matchSource=${
-        allowMatch.matchSource ?? "none"
-      }`;
+      const allowMatchMeta = formatAllowlistMatchMeta(allowMatch);
       if (!allowMatch.allowed) {
         if (ctx.dmPolicy === "pairing") {
           const sender = await ctx.resolveUserName(directUserId);
@@ -476,10 +475,11 @@ export async function prepareSlackMessage(params: {
     Surface: "slack" as const,
     MessageSid: message.ts,
     ReplyToId: message.thread_ts ?? message.ts,
+    // Preserve thread context for routed tool notifications (thread replies only).
+    MessageThreadId: isThreadReply ? threadTs : undefined,
     ParentSessionKey: threadKeys.parentSessionKey,
     ThreadStarterBody: threadStarterBody,
     ThreadLabel: threadLabel,
-    MessageThreadId: isThreadReply ? threadTs : undefined,
     Timestamp: message.ts ? Math.round(Number(message.ts) * 1000) : undefined,
     WasMentioned: isRoomish ? effectiveWasMentioned : undefined,
     MediaPath: media?.path,

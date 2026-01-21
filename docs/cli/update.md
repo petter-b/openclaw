@@ -1,5 +1,5 @@
 ---
-summary: "CLI reference for `clawdbot update` (safe-ish source update + optional daemon restart)"
+summary: "CLI reference for `clawdbot update` (safe-ish source update + optional gateway restart)"
 read_when:
   - You want to update a source checkout safely
   - You need to understand `--update` shorthand behavior
@@ -7,9 +7,9 @@ read_when:
 
 # `clawdbot update`
 
-Safely update a **source checkout** (git install) of Clawdbot.
+Safely update Clawdbot and switch between stable/beta/dev channels.
 
-If you installed via **npm/pnpm** (global install, no git metadata), use the package manager flow in [Updating](/install/updating).
+If you installed via **npm/pnpm** (global install, no git metadata), updates happen via the package manager flow in [Updating](/install/updating).
 
 ## Usage
 
@@ -26,7 +26,7 @@ clawdbot --update
 
 ## Options
 
-- `--restart`: restart the Gateway daemon after a successful update.
+- `--restart`: restart the Gateway service after a successful update.
 - `--channel <stable|beta|dev>`: set the update channel (git + npm; persisted in config).
 - `--tag <dist-tag|version>`: override the npm dist-tag or version for this update only.
 - `--json`: print machine-readable `UpdateRunResult` JSON.
@@ -48,7 +48,16 @@ Options:
 - `--json`: print machine-readable status JSON.
 - `--timeout <seconds>`: timeout for checks (default is 3s).
 
-## What it does (git checkout)
+## What it does
+
+When you switch channels explicitly (`--channel ...`), Clawdbot also keeps the
+install method aligned:
+
+- `dev` → ensures a git checkout (default: `~/clawdbot`, override with `CLAWDBOT_GIT_DIR`),
+  updates it, and installs the global CLI from that checkout.
+- `stable`/`beta` → installs from npm using the matching dist-tag.
+
+## Git checkout flow
 
 Channels:
 

@@ -24,7 +24,7 @@ Unknown keys, malformed types, or invalid values cause the Gateway to **refuse t
 
 When validation fails:
 - The Gateway does not boot.
-- Only diagnostic commands are allowed (for example: `clawdbot doctor`, `clawdbot logs`, `clawdbot health`, `clawdbot status`, `clawdbot service`, `clawdbot help`).
+- Only diagnostic commands are allowed (for example: `clawdbot doctor`, `clawdbot logs`, `clawdbot health`, `clawdbot status`, `clawdbot gateway status`, `clawdbot gateway probe`, `clawdbot help`).
 - Run `clawdbot doctor` to see the exact issues.
 - Run `clawdbot doctor --fix` (or `--yes`) to apply migrations/repairs.
 
@@ -2615,9 +2615,12 @@ Defaults:
     // noSandbox: false,
     // executablePath: "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
     // attachOnly: false, // set true when tunneling a remote CDP to localhost
+    // snapshotDefaults: { mode: "efficient" }, // tool/CLI default snapshot preset
   }
 }
 ```
+
+Note: `browser.snapshotDefaults` only affects Clawdbot's browser tool + CLI. Direct HTTP clients must pass `mode` explicitly.
 
 ### `ui` (Appearance)
 
@@ -3019,6 +3022,9 @@ Template placeholders are expanded in `tools.media.*.models[].args` and `tools.m
 | `{{From}}` | Sender identifier (E.164 for WhatsApp; may differ per channel) |
 | `{{To}}` | Destination identifier |
 | `{{MessageSid}}` | Channel message id (when available) |
+| `{{MessageSidFull}}` | Provider-specific full message id when `MessageSid` is shortened |
+| `{{ReplyToId}}` | Reply-to message id (when available) |
+| `{{ReplyToIdFull}}` | Provider-specific full reply-to id when `ReplyToId` is shortened |
 | `{{SessionId}}` | Current session UUID |
 | `{{IsNewSession}}` | `"true"` when a new session was created |
 | `{{MediaUrl}}` | Inbound media pseudo-URL (if present) |
