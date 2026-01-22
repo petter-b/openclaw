@@ -28,6 +28,10 @@ Build the macOS companion app (Clawdbot.app) from a clean upstream release witho
 1. **Check for new upstream release** - Fetch tags and compare with local
 2. **Build** - Create worktree at `.worktrees/latest` and build from clean tag (no hotfixes)
 
+## Important
+
+**Never use `cd` to change directories** - the working directory persists between Bash commands. Use subshells `(cd dir && cmd)` or tool flags like `git -C dir` instead.
+
 ## Instructions
 
 Run these steps in order:
@@ -40,8 +44,8 @@ First, fetch latest tags:
 Latest upstream release:
 !`git tag --sort=-version:refname | grep '^v2' | head -1`
 
-Check if worktree exists:
-!`LATEST=$(git tag --sort=-version:refname | grep '^v2' | head -1); if [[ -d ".worktrees/$LATEST" ]]; then echo "✓ Worktree exists: .worktrees/$LATEST"; else echo "✗ No worktree yet for $LATEST"; fi`
+Check if worktree exists and its current version:
+!`LATEST=$(git tag --sort=-version:refname | grep '^v2' | head -1); if [[ -d ".worktrees/latest" ]]; then CURRENT=$(git -C .worktrees/latest describe --tags --exact-match 2>/dev/null || git -C .worktrees/latest rev-parse --short HEAD); echo "✓ Worktree exists at $CURRENT"; else echo "✗ No worktree yet for $LATEST"; fi`
 
 ### Step 2: Confirm and build
 
