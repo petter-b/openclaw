@@ -1,10 +1,54 @@
 import { describe, expect, it, vi } from "vitest";
 import { ExecApprovalManager } from "../exec-approval-manager.js";
 import { createExecApprovalHandlers } from "./exec-approval.js";
+import { validateExecApprovalRequestParams } from "../protocol/index.js";
 
 const noop = () => {};
 
 describe("exec approval handlers", () => {
+  describe("ExecApprovalRequestParams validation", () => {
+    it("accepts request with resolvedPath omitted", () => {
+      const params = {
+        command: "echo hi",
+        cwd: "/tmp",
+        host: "node",
+      };
+      expect(validateExecApprovalRequestParams(params)).toBe(true);
+    });
+
+    it("accepts request with resolvedPath as string", () => {
+      const params = {
+        command: "echo hi",
+        cwd: "/tmp",
+        host: "node",
+        resolvedPath: "/usr/bin/echo",
+      };
+      expect(validateExecApprovalRequestParams(params)).toBe(true);
+    });
+
+    it("accepts request with resolvedPath as undefined", () => {
+      const params = {
+        command: "echo hi",
+        cwd: "/tmp",
+        host: "node",
+        resolvedPath: undefined,
+      };
+      expect(validateExecApprovalRequestParams(params)).toBe(true);
+    });
+
+    // This documents the TypeBox/AJV behavior that caused the Discord exec bug:
+    // Type.Optional(Type.String()) does NOT accept null, only string or undefined.
+    it("rejects request with resolvedPath as null", () => {
+      const params = {
+        command: "echo hi",
+        cwd: "/tmp",
+        host: "node",
+        resolvedPath: null,
+      };
+      expect(validateExecApprovalRequestParams(params)).toBe(false);
+    });
+  });
+
   it("broadcasts request + resolve", async () => {
     const manager = new ExecApprovalManager();
     const handlers = createExecApprovalHandlers(manager);
@@ -59,6 +103,57 @@ describe("exec approval handlers", () => {
       undefined,
     );
     expect(broadcasts.some((entry) => entry.event === "exec.approval.resolved")).toBe(true);
+  });
+
+  it("accepts resolve during broadcast", async () => {
+    const manager = new ExecApprovalManager();
+    const handlers = createExecApprovalHandlers(manager);
+    const respond = vi.fn();
+    const resolveRespond = vi.fn();
+
+    const resolveContext = {
+      broadcast: () => {},
+    };
+
+    const context = {
+      broadcast: (event: string, payload: unknown) => {
+        if (event !== "exec.approval.requested") return;
+        const id = (payload as { id?: string })?.id ?? "";
+        void handlers["exec.approval.resolve"]({
+          params: { id, decision: "allow-once" },
+          respond: resolveRespond,
+          context: resolveContext as unknown as Parameters<
+            (typeof handlers)["exec.approval.resolve"]
+          >[0]["context"],
+          client: { connect: { client: { id: "cli", displayName: "CLI" } } },
+          req: { id: "req-2", type: "req", method: "exec.approval.resolve" },
+          isWebchatConnect: noop,
+        });
+      },
+    };
+
+    await handlers["exec.approval.request"]({
+      params: {
+        command: "echo ok",
+        cwd: "/tmp",
+        host: "node",
+        timeoutMs: 2000,
+      },
+      respond,
+      context: context as unknown as Parameters<
+        (typeof handlers)["exec.approval.request"]
+      >[0]["context"],
+      client: null,
+      req: { id: "req-1", type: "req", method: "exec.approval.request" },
+      isWebchatConnect: noop,
+    });
+
+    expect(resolveRespond).toHaveBeenCalledWith(true, { ok: true }, undefined);
+    expect(respond).toHaveBeenCalledWith(
+      true,
+      expect.objectContaining({ decision: "allow-once" }),
+      undefined,
+    );
   });
 
   it("accepts explicit approval ids", async () => {

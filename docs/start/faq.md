@@ -117,6 +117,8 @@ Quick answers plus deeper troubleshooting for real-world setups (local dev, VPS,
   - [My skill generated an image/PDF, but nothing was sent](#my-skill-generated-an-imagepdf-but-nothing-was-sent)
 - [Security and access control](#security-and-access-control)
   - [Is it safe to expose Clawdbot to inbound DMs?](#is-it-safe-to-expose-clawdbot-to-inbound-dms)
+  - [Is prompt injection only a concern for public bots?](#is-prompt-injection-only-a-concern-for-public-bots)
+  - [Can I use cheaper models for personal assistant tasks?](#can-i-use-cheaper-models-for-personal-assistant-tasks)
   - [I ran `/start` in Telegram but didn’t get a pairing code](#i-ran-start-in-telegram-but-didnt-get-a-pairing-code)
   - [WhatsApp: will it message my contacts? How does pairing work?](#whatsapp-will-it-message-my-contacts-how-does-pairing-work)
 - [Chat commands, aborting tasks, and “it won’t stop”](#chat-commands-aborting-tasks-and-it-wont-stop)
@@ -1065,6 +1067,17 @@ You can also force a specific auth profile for the provider (per session):
 Tip: `/model status` shows which agent is active, which `auth-profiles.json` file is being used, and which auth profile will be tried next.
 It also shows the configured provider endpoint (`baseUrl`) and API mode (`api`) when available.
 
+### How do I unpin a profile I set with `@profile`?
+
+Re-run `/model` **without** the `@profile` suffix:
+
+```
+/model anthropic/claude-opus-4-5
+```
+
+If you want to return to the default, pick it from `/model` (or send `/model <default provider/model>`).
+Use `/model status` to confirm which auth profile is active.
+
 ### Why do I see “Model … is not allowed” and then no reply?
 
 If `agents.defaults.models` is set, it becomes the **allowlist** for `/model` and any
@@ -1274,7 +1287,7 @@ Fix: either provide Google auth, or remove/avoid Google models in `agents.defaul
 Cause: the session history contains **thinking blocks without signatures** (often from
 an aborted/partial stream). Google Antigravity requires signatures for thinking blocks.
 
-Fix: start a **new session** or set `/thinking off` for that agent.
+Fix: Clawdbot now strips unsigned thinking blocks for Google Antigravity Claude. If it still appears, start a **new session** or set `/thinking off` for that agent.
 
 ## Auth profiles: what they are and how to manage them
 
@@ -1538,6 +1551,28 @@ Treat inbound DMs as untrusted input. Defaults are designed to reduce risk:
 - Opening DMs publicly requires explicit opt‑in (`dmPolicy: "open"` and allowlist `"*"`).
 
 Run `clawdbot doctor` to surface risky DM policies.
+
+### Is prompt injection only a concern for public bots?
+
+No. Prompt injection is about **untrusted content**, not just who can DM the bot.
+If your assistant reads external content (web search/fetch, browser pages, emails,
+docs, attachments, pasted logs), that content can include instructions that try
+to hijack the model. This can happen even if **you are the only sender**.
+
+The biggest risk is when tools are enabled: the model can be tricked into
+exfiltrating context or calling tools on your behalf. Reduce the blast radius by:
+- using a read-only or tool-disabled "reader" agent to summarize untrusted content
+- keeping `web_search` / `web_fetch` / `browser` off for tool-enabled agents
+- sandboxing and strict tool allowlists
+
+Details: [Security](/gateway/security).
+
+### Can I use cheaper models for personal assistant tasks?
+
+Yes, **if** the agent is chat-only and the input is trusted. Smaller tiers are
+more susceptible to instruction hijacking, so avoid them for tool-enabled agents
+or when reading untrusted content. If you must use a smaller model, lock down
+tools and run inside a sandbox. See [Security](/gateway/security).
 
 ### I ran `/start` in Telegram but didn’t get a pairing code
 
