@@ -2,10 +2,52 @@
 
 Docs: https://docs.clawd.bot
 
+## 2026.1.22 (unreleased)
+
+### Changes
+- Highlight: Mattermost plugin channel support with pairing + allowlist gating. (#1428) Thanks @damoahdominic.
+- Highlight: OpenProse plugin skill pack with `/prose` slash command, plugin-shipped skills, and docs. https://docs.clawd.bot/prose
+- TUI: run local shell commands with `!` after per-session consent, and warn when local exec stays disabled. (#1463) Thanks @vignesh07.
+- Highlight: Lobster optional plugin tool for typed workflows + approval gates. https://docs.clawd.bot/tools/lobster
+- Agents: add identity avatar config support and Control UI avatar rendering. (#1329, #1424) Thanks @dlauer.
+- Memory: prevent CLI hangs by deferring vector probes, adding sqlite-vec/embedding timeouts, and showing sync progress early.
+- Docs: add troubleshooting entry for gateway.mode blocking gateway start. https://docs.clawd.bot/gateway/troubleshooting
+- Docs: add /model allowlist troubleshooting note. (#1405)
+- Docs: add per-message Gmail search example for gog. (#1220) Thanks @mbelinky.
+- UI: show per-session assistant identity in the Control UI. (#1420) Thanks @robbyczgw-cla.
+- Onboarding: remove the run setup-token auth option (paste setup-token or reuse CLI creds instead).
+- Signal: add typing indicators and DM read receipts via signal-cli.
+- MSTeams: add file uploads, adaptive cards, and attachment handling improvements. (#1410) Thanks @Evizero.
+- CLI: add `clawdbot update wizard` for interactive channel selection and restart prompts. https://docs.clawd.bot/cli/update
+- macOS: add attach-only debug toggle + `--attach-only`/`--no-launchd` flag to skip launchd installs.
+
+### Breaking
+- **BREAKING:** Envelope and system event timestamps now default to host-local time (was UTC) so agents don’t have to constantly convert.
+
+### Fixes
+- BlueBubbles: stop typing indicator on idle/no-reply. (#1439) Thanks @Nicell.
+- Message tool: keep path/filePath as-is for send; hydrate buffers only for sendAttachment. (#1444) Thanks @hopyky.
+- Auto-reply: only report a model switch when session state is available. (#1465) Thanks @robbyczgw-cla.
+- Control UI: resolve local avatar URLs with basePath across injection + identity RPC. (#1457) Thanks @dlauer.
+- Agents: surface concrete API error details instead of generic AI service errors.
+- Exec approvals: allow per-segment allowlists for chained shell commands on gateway + node hosts. (#1458) Thanks @czekaj.
+- Agents: make OpenAI sessions image-sanitize-only; gate tool-id/repair sanitization by provider.
+<<<<<<< Updated upstream
+- Agents: make tool summaries more readable and only show optional params when set.
+- Mattermost (plugin): enforce pairing/allowlist gating, keep @username targets, and clarify plugin-only docs. (#1428) Thanks @damoahdominic.
+||||||| Stash base
+=======
+- Agents: centralize transcript sanitization in the runner; keep <final> tags and error turns intact.
+>>>>>>> Stashed changes
+- Docs: fix gog auth services example to include docs scope. (#1454) Thanks @zerone0x.
+- macOS: prefer linked channels in gateway summary to avoid false “not linked” status.
+- Providers: improve GitHub Copilot integration (enterprise support, base URL, and auth flow alignment).
+
 ## 2026.1.21-2
 
 ### Fixes
 - Control UI: ignore bootstrap identity placeholder text for avatar values and fall back to the default avatar. https://docs.clawd.bot/cli/agents https://docs.clawd.bot/web/control-ui
+- Slack: remove deprecated `filetype` field from `files.uploadV2` to eliminate API warnings. (#1447)
 
 ## 2026.1.21
 
