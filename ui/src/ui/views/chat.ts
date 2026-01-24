@@ -7,7 +7,6 @@ import {
   normalizeMessage,
   normalizeRoleForGrouping,
 } from "../chat/message-normalizer";
-import { extractText } from "../chat/message-extract";
 import {
   renderMessageGroup,
   renderReadingIndicatorGroup,
@@ -114,6 +113,41 @@ export function renderChat(props: ChatProps) {
 
   const splitRatio = props.splitRatio ?? 0.6;
   const sidebarOpen = Boolean(props.sidebarOpen && props.onCloseSidebar);
+  const thread = html`
+    <div
+      class="chat-thread"
+      role="log"
+      aria-live="polite"
+      @scroll=${props.onChatScroll}
+    >
+      ${props.loading ? html`<div class="muted">Loading chat…</div>` : nothing}
+      ${repeat(buildChatItems(props), (item) => item.key, (item) => {
+        if (item.kind === "reading-indicator") {
+          return renderReadingIndicatorGroup(assistantIdentity);
+        }
+
+        if (item.kind === "stream") {
+          return renderStreamingGroup(
+            item.text,
+            item.startedAt,
+            props.onOpenSidebar,
+            assistantIdentity,
+          );
+        }
+
+        if (item.kind === "group") {
+          return renderMessageGroup(item, {
+            onOpenSidebar: props.onOpenSidebar,
+            showReasoning,
+            assistantName: props.assistantName,
+            assistantAvatar: assistantIdentity.avatar,
+          });
+        }
+
+        return nothing;
+      })}
+    </div>
+  `;
 
   return html`
     <section class="card chat">
@@ -148,41 +182,7 @@ export function renderChat(props: ChatProps) {
           class="chat-main"
           style="flex: ${sidebarOpen ? `0 0 ${splitRatio * 100}%` : "1 1 100%"}"
         >
-          <div
-            class="chat-thread"
-            role="log"
-            aria-live="polite"
-            @scroll=${props.onChatScroll}
-          >
-            ${props.loading
-              ? html`<div class="muted">Loading chat…</div>`
-              : nothing}
-            ${repeat(buildChatItems(props), (item) => item.key, (item) => {
-              if (item.kind === "reading-indicator") {
-                return renderReadingIndicatorGroup(assistantIdentity);
-              }
-
-              if (item.kind === "stream") {
-                return renderStreamingGroup(
-                  item.text,
-                  item.startedAt,
-                  props.onOpenSidebar,
-                  assistantIdentity,
-                );
-              }
-
-              if (item.kind === "group") {
-                return renderMessageGroup(item, {
-                  onOpenSidebar: props.onOpenSidebar,
-                  showReasoning,
-                  assistantName: props.assistantName,
-                  assistantAvatar: assistantIdentity.avatar,
-                });
-              }
-
-              return nothing;
-            })}
-          </div>
+          ${thread}
         </div>
 
         ${sidebarOpen
@@ -378,26 +378,6 @@ function messageKey(message: unknown, index: number): string {
   if (messageId) return `msg:${messageId}`;
   const timestamp = typeof m.timestamp === "number" ? m.timestamp : null;
   const role = typeof m.role === "string" ? m.role : "unknown";
-  const fingerprint =
-    extractText(message) ?? (typeof m.content === "string" ? m.content : null);
-  const seed = fingerprint ?? safeJson(message) ?? String(index);
-  const hash = fnv1a(seed);
-  return timestamp ? `msg:${role}:${timestamp}:${hash}` : `msg:${role}:${hash}`;
-}
-
-function safeJson(value: unknown): string | null {
-  try {
-    return JSON.stringify(value);
-  } catch {
-    return null;
-  }
-}
-
-function fnv1a(input: string): string {
-  let hash = 0x811c9dc5;
-  for (let i = 0; i < input.length; i++) {
-    hash ^= input.charCodeAt(i);
-    hash = Math.imul(hash, 0x01000193);
-  }
-  return (hash >>> 0).toString(36);
+  if (timestamp != null) return `msg:${role}:${timestamp}:${index}`;
+  return `msg:${role}:${index}`;
 }

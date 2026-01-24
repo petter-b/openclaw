@@ -5,21 +5,30 @@ Docs: https://docs.clawd.bot
 ## 2026.1.23 (Unreleased)
 
 ### Changes
+- Browser: add node-host proxy auto-routing for remote gateways (configurable per gateway/node).
 - Plugins: add optional llm-task JSON-only tool for workflows. (#1498) Thanks @vignesh07.
 - CLI: restart the gateway by default after `clawdbot update`; add `--no-restart` to skip it.
 - CLI: add live auth probes to `clawdbot models status` for per-profile verification.
+- CLI: add `clawdbot system` for system events + heartbeat controls; remove standalone `wake`.
 - Agents: add Bedrock auto-discovery defaults + config overrides. (#1553) Thanks @fal3.
 - Docs: add cron vs heartbeat decision guide (with Lobster workflow notes). (#1533) Thanks @JustYannicc.
+- Docs: clarify HEARTBEAT.md empty file skips heartbeats, missing file still runs. (#1535) Thanks @JustYannicc.
 - Markdown: add per-channel table conversion (bullets for Signal/WhatsApp, code blocks elsewhere). (#1495) Thanks @odysseus0.
 - Tlon: add Urbit channel plugin (DMs, group mentions, thread replies). (#1544) Thanks @wca4a.
+- Channels: allow per-group tool allow/deny policies across built-in + plugin channels. (#1546) Thanks @adam91holt.
 
 ### Fixes
+- Agents: ignore IDENTITY.md template placeholders when parsing identity to avoid placeholder replies. (#1556)
+- Docker: update gateway command in docker-compose and Hetzner guide. (#1514)
+- Sessions: reject array-backed session stores to prevent silent wipes. (#1469)
 - Voice wake: auto-save wake words on blur/submit across iOS/Android and align limits with macOS.
 - UI: keep the Control UI sidebar visible while scrolling long pages. (#1515) Thanks @pookNast.
+- UI: cache Control UI markdown rendering + memoize chat text extraction to reduce Safari typing jank.
 - Tailscale: retry serve/funnel with sudo only for permission errors and keep original failure details. (#1551) Thanks @sweepies.
 - Agents: add CLI log hint to "agent failed before reply" messages. (#1550) Thanks @sweepies.
 - Discord: limit autoThread mention bypass to bot-owned threads; keep ack reactions mention-gated. (#1511) Thanks @pvoo.
 - Gateway: accept null optional fields in exec approval requests. (#1511) Thanks @pvoo.
+- Exec: honor tools.exec ask/security defaults for elevated approvals (avoid unwanted prompts).
 - TUI: forward unknown slash commands (for example, `/context`) to the Gateway.
 - TUI: include Gateway slash commands in autocomplete and `/help`.
 - CLI: skip usage lines in `clawdbot models status` when provider usage is unavailable.
@@ -32,15 +41,18 @@ Docs: https://docs.clawd.bot
 - CLI: explain when auth profiles are excluded by auth.order in probe details.
 - CLI: drop the em dash when the banner tagline wraps to a second line.
 - CLI: inline auth probe errors in status rows to reduce wrapping.
+- Telegram: render markdown in media captions. (#1478)
 - Agents: honor enqueue overrides for embedded runs to avoid queue deadlocks in tests.
 - Daemon: use platform PATH delimiters when building minimal service paths.
 - Tests: skip embedded runner ordering assertion on Windows to avoid CI timeouts.
 - Linux: include env-configured user bin roots in systemd PATH and align PATH audits. (#1512) Thanks @robbyczgw-cla.
 - TUI: render Gateway slash-command replies as system output (for example, `/context`).
+- Media: only parse `MEDIA:` tags when they start the line to avoid stripping prose mentions. (#1206)
 - Media: preserve PNG alpha when possible; fall back to JPEG when still over size cap. (#1491) Thanks @robbyczgw-cla.
 - Agents: treat plugin-only tool allowlists as opt-ins; keep core tools enabled. (#1467)
 - Exec approvals: persist allowlist entry ids to keep macOS allowlist rows stable. (#1521) Thanks @ngutman.
 - MS Teams (plugin): remove `.default` suffix from Graph scopes to avoid double-appending. (#1507) Thanks @Evizero.
+- Browser: keep extension relay tabs controllable when the extension reuses a session id after switching tabs. (#1160)
 
 ## 2026.1.22
 
