@@ -16,6 +16,24 @@ If you do not know, you should be honest about it. If you need more clarity you 
 
 ---
 
+## CLI Usage
+
+**Always use the globally installed `clawdbot` command** — never `pnpm clawdbot` or `bun clawdbot`.
+
+```bash
+# Correct
+clawdbot channels status
+clawdbot gateway restart
+clawdbot config get bindings
+
+# Wrong - do not use
+pnpm clawdbot channels status
+```
+
+For development builds/tests, use `pnpm build`, `pnpm test`, etc. But for running Clawdbot CLI commands, always use the global install.
+
+---
+
 **Dev-only** (never push): `.workflow/`, `.claude/`
 
 **Never edit upstream files**: Root `AGENTS.md`, `CHANGELOG.md`, `package.json`, `src/**` (unless contributing via PR)
@@ -161,6 +179,33 @@ See root `AGENTS.md`. Key: `/dev:gate` before commits, `scripts/committer` for s
 ## Troubleshooting
 
 See `automation/infrastructure.md` for logs, environment variables, and troubleshooting commands.
+
+---
+
+## macOS Gateway Rules
+
+**NEVER run `scripts/restart-mac.sh` without explicit user request.** It rebuilds Swift (~80s) and is rarely needed.
+
+### Gateway Commands
+
+| Task | Command |
+|------|---------|
+| Restart gateway | `clawdbot gateway restart` |
+| Check status | `clawdbot gateway status` |
+| Install/start | `clawdbot gateway install` |
+| View logs | `./scripts/clawlog.sh -f` |
+
+### When Rebuild is Required (ask user first)
+
+- Swift/SwiftUI code changed
+- App version bump
+- Release prep
+
+### When Restart Suffices (no rebuild)
+
+- Config changed → `clawdbot gateway restart`
+- TypeScript changed → `pnpm build && clawdbot gateway restart`
+- Gateway unresponsive → `clawdbot gateway restart`
 
 ---
 
