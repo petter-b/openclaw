@@ -19,6 +19,12 @@ if echo "$COMMAND" | grep -qE '^rm\s+.*-rf\s+/\s*$'; then
   exit 2
 fi
 
+# Block restart/kill commands for Clawdbot services (require explicit user request)
+if echo "$COMMAND" | grep -qiE '(restart-mac|pkill.*[Cc]lawdbot|killall.*[Cc]lawdbot|launchctl.*clawdbot)'; then
+  echo '{"decision": "block", "reason": "Command blocked: Clawdbot service management requires explicit user permission. Ask first before restarting services."}' >&2
+  exit 2
+fi
+
 # Git-specific checks - only apply when actually running git
 if [[ "$BASE_CMD" == "git" ]]; then
   # Extract git subcommand (second word)
