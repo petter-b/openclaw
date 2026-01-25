@@ -19,9 +19,12 @@ if echo "$COMMAND" | grep -qE '^rm\s+.*-rf\s+/\s*$'; then
   exit 2
 fi
 
-# Block restart/kill commands for Clawdbot services (require explicit user request)
-if echo "$COMMAND" | grep -qiE '(restart-mac|pkill.*[Cc]lawdbot|killall.*[Cc]lawdbot|launchctl.*clawdbot)'; then
-  echo '{"decision": "block", "reason": "Command blocked: Clawdbot service management requires explicit user permission. Ask first before restarting services."}' >&2
+# Block restart-mac.sh - agents should not run this (it's a full rebuild cycle)
+# Match actual script execution: ./restart-mac, scripts/restart-mac, bash restart-mac, etc.
+if echo "$COMMAND" | grep -qE '(^|\./|/|bash\s+|sh\s+)restart-mac'; then
+  cat >&2 <<'BLOCK'
+{"decision": "block", "reason": "Cannot run restart-mac.sh directly.\n\nTo restart Clawdbot on macOS:\n\n• Gateway daemon: clawdbot daemon restart\n• App only: Quit menubar icon, then: open /Applications/Clawdbot.app\n• Full rebuild: Use /build:mac-clean slash command"}
+BLOCK
   exit 2
 fi
 
