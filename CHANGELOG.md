@@ -19,6 +19,7 @@ Docs: https://docs.clawd.bot
 - Docs: add Bedrock EC2 instance role setup + IAM steps. (#1625) Thanks @sergical. https://docs.clawd.bot/bedrock
 - Exec approvals: forward approval prompts to chat with `/approve` for all channels (including plugins). (#1621) Thanks @czekaj. https://docs.clawd.bot/tools/exec-approvals https://docs.clawd.bot/tools/slash-commands
 - Gateway: expose config.patch in the gateway tool with safe partial updates + restart sentinel. (#1653) Thanks @Glucksberg.
+- Telegram: add `channels.telegram.linkPreview` to toggle outbound link previews. (#1700) Thanks @zerone0x. https://docs.clawd.bot/channels/telegram
 - Telegram: treat DM topics as separate sessions and keep DM history limits stable with thread suffixes. (#1597) Thanks @rohannagpal.
 - Telegram: add verbose raw-update logging for inbound Telegram updates. (#1597) Thanks @rohannagpal.
 
@@ -41,6 +42,7 @@ Docs: https://docs.clawd.bot
 - Gateway: reduce log noise for late invokes + remote node probes; debounce skills refresh. (#1607) Thanks @petter-b.
 - Gateway: clarify Control UI/WebChat auth error hints for missing tokens. (#1690)
 - Gateway: listen on IPv6 loopback when bound to 127.0.0.1 so localhost webhooks work.
+- Gateway: store lock files in the temp directory to avoid stale locks on persistent volumes. (#1676)
 - macOS: default direct-transport `ws://` URLs to port 18789; document `gateway.remote.transport`. (#1603) Thanks @ngutman.
 - Voice Call: return stream TwiML for outbound conversation calls on initial Twilio webhook. (#1634)
 - Google Chat: tighten email allowlist matching, typing cleanup, media caps, and onboarding/docs/tests. (#1635) Thanks @iHildy.
