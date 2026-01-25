@@ -1131,7 +1131,7 @@ Reaction notification modes:
 - `own`: reactions on the bot's own messages (default).
 - `all`: all reactions on all messages.
 - `allowlist`: reactions from `guilds.<id>.users` on all messages (empty list disables).
-Outbound text is chunked by `channels.discord.textChunkLimit` (default 2000). Set `channels.discord.chunkMode="newline"` to split on line boundaries before length chunking. Discord clients can clip very tall messages, so `channels.discord.maxLinesPerMessage` (default 17) splits long multi-line replies even when under 2000 chars.
+Outbound text is chunked by `channels.discord.textChunkLimit` (default 2000). Set `channels.discord.chunkMode="newline"` to split on blank lines (paragraph boundaries) before length chunking. Discord clients can clip very tall messages, so `channels.discord.maxLinesPerMessage` (default 17) splits long multi-line replies even when under 2000 chars.
 Retry policy defaults and behavior are documented in [Retry policy](/concepts/retry).
 
 ### `channels.googlechat` (Chat API webhook)
@@ -2847,8 +2847,9 @@ Control UI base path:
 - `gateway.controlUi.basePath` sets the URL prefix where the Control UI is served.
 - Examples: `"/ui"`, `"/clawdbot"`, `"/apps/clawdbot"`.
 - Default: root (`/`) (unchanged).
-- `gateway.controlUi.allowInsecureAuth` allows token-only auth over **HTTP** (no device identity).
-  Default: `false`. Prefer HTTPS (Tailscale Serve) or `127.0.0.1`.
+- `gateway.controlUi.allowInsecureAuth` allows token-only auth for the Control UI and skips
+  device identity + pairing (even on HTTPS). Default: `false`. Prefer HTTPS
+  (Tailscale Serve) or `127.0.0.1`.
 
 Related docs:
 - [Control UI](/web/control-ui)
