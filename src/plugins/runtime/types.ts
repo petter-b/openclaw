@@ -19,6 +19,8 @@ type SaveMediaBuffer = typeof import("../../media/store.js").saveMediaBuffer;
 type BuildMentionRegexes = typeof import("../../auto-reply/reply/mentions.js").buildMentionRegexes;
 type MatchesMentionPatterns =
   typeof import("../../auto-reply/reply/mentions.js").matchesMentionPatterns;
+type MatchesMentionWithExplicit =
+  typeof import("../../auto-reply/reply/mentions.js").matchesMentionWithExplicit;
 type ShouldAckReaction = typeof import("../../channels/ack-reactions.js").shouldAckReaction;
 type RemoveAckReactionAfterReply =
   typeof import("../../channels/ack-reactions.js").removeAckReactionAfterReply;
@@ -33,8 +35,11 @@ type ResolveInboundDebounceMs =
 type ResolveCommandAuthorizedFromAuthorizers =
   typeof import("../../channels/command-gating.js").resolveCommandAuthorizedFromAuthorizers;
 type ResolveTextChunkLimit = typeof import("../../auto-reply/chunk.js").resolveTextChunkLimit;
+type ResolveChunkMode = typeof import("../../auto-reply/chunk.js").resolveChunkMode;
 type ChunkMarkdownText = typeof import("../../auto-reply/chunk.js").chunkMarkdownText;
 type ChunkText = typeof import("../../auto-reply/chunk.js").chunkText;
+type ChunkTextWithMode = typeof import("../../auto-reply/chunk.js").chunkTextWithMode;
+type ChunkByNewline = typeof import("../../auto-reply/chunk.js").chunkByNewline;
 type ResolveMarkdownTableMode =
   typeof import("../../config/markdown-tables.js").resolveMarkdownTableMode;
 type ConvertMarkdownTables = typeof import("../../markdown/tables.js").convertMarkdownTables;
@@ -171,8 +176,11 @@ export type PluginRuntime = {
   };
   channel: {
     text: {
+      chunkByNewline: ChunkByNewline;
       chunkMarkdownText: ChunkMarkdownText;
       chunkText: ChunkText;
+      chunkTextWithMode: ChunkTextWithMode;
+      resolveChunkMode: ResolveChunkMode;
       resolveTextChunkLimit: ResolveTextChunkLimit;
       hasControlCommand: HasControlCommand;
       resolveMarkdownTableMode: ResolveMarkdownTableMode;
@@ -215,6 +223,7 @@ export type PluginRuntime = {
     mentions: {
       buildMentionRegexes: BuildMentionRegexes;
       matchesMentionPatterns: MatchesMentionPatterns;
+      matchesMentionWithExplicit: MatchesMentionWithExplicit;
     };
     reactions: {
       shouldAckReaction: ShouldAckReaction;

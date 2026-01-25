@@ -71,6 +71,7 @@ export type MsgContext = {
   Transcript?: string;
   MediaUnderstanding?: MediaUnderstandingOutput[];
   MediaUnderstandingDecisions?: MediaUnderstandingDecision[];
+  LinkUnderstanding?: string[];
   Prompt?: string;
   MaxChars?: number;
   ChatType?: string;
@@ -87,6 +88,7 @@ export type MsgContext = {
   SenderUsername?: string;
   SenderTag?: string;
   SenderE164?: string;
+  Timestamp?: number;
   /** Provider label (e.g. whatsapp, telegram). */
   Provider?: string;
   /** Provider surface label (e.g. discord, slack). Prefer this over `Provider` when available. */

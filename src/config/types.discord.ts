@@ -6,6 +6,7 @@ import type {
   OutboundRetryConfig,
   ReplyToMode,
 } from "./types.base.js";
+import type { ChannelHeartbeatVisibilityConfig } from "./types.channels.js";
 import type { DmConfig, ProviderCommandsConfig } from "./types.messages.js";
 import type { GroupToolPolicyConfig } from "./types.tools.js";
 
@@ -71,6 +72,17 @@ export type DiscordActionConfig = {
   channels?: boolean;
 };
 
+export type DiscordExecApprovalConfig = {
+  /** Enable exec approval forwarding to Discord DMs. Default: false. */
+  enabled?: boolean;
+  /** Discord user IDs to receive approval prompts. Required if enabled. */
+  approvers?: Array<string | number>;
+  /** Only forward approvals for these agent IDs. Omit = all agents. */
+  agentFilter?: string[];
+  /** Only forward approvals matching these session key patterns (substring or regex). */
+  sessionFilter?: string[];
+};
+
 export type DiscordAccountConfig = {
   /** Optional display name for this account (used in CLI/UI lists). */
   name?: string;
@@ -121,6 +133,10 @@ export type DiscordAccountConfig = {
   dm?: DiscordDmConfig;
   /** New per-guild config keyed by guild id or slug. */
   guilds?: Record<string, DiscordGuildEntry>;
+  /** Heartbeat visibility settings for this channel. */
+  heartbeat?: ChannelHeartbeatVisibilityConfig;
+  /** Exec approval forwarding configuration. */
+  execApprovals?: DiscordExecApprovalConfig;
 };
 
 export type DiscordConfig = {

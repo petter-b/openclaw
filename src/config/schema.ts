@@ -1,3 +1,4 @@
+import { CHANNEL_IDS } from "../channels/registry.js";
 import { VERSION } from "../version.js";
 import { ClawdbotSchema } from "./zod-schema.js";
 
@@ -157,6 +158,11 @@ const FIELD_LABELS: Record<string, string> = {
   "tools.media.video.attachments": "Video Understanding Attachment Policy",
   "tools.media.video.models": "Video Understanding Models",
   "tools.media.video.scope": "Video Understanding Scope",
+  "tools.links.enabled": "Enable Link Understanding",
+  "tools.links.maxLinks": "Link Understanding Max Links",
+  "tools.links.timeoutSeconds": "Link Understanding Timeout (sec)",
+  "tools.links.models": "Link Understanding Models",
+  "tools.links.scope": "Link Understanding Scope",
   "tools.profile": "Tool Profile",
   "agents.list[].tools.profile": "Agent Tool Profile",
   "tools.byProvider": "Tool Policy by Provider",
@@ -807,6 +813,44 @@ function applyChannelHints(hints: ConfigUiHints, channels: ChannelUiMetadata[]):
   return next;
 }
 
+function listHeartbeatTargetChannels(channels: ChannelUiMetadata[]): string[] {
+  const seen = new Set<string>();
+  const ordered: string[] = [];
+  for (const id of CHANNEL_IDS) {
+    const normalized = id.trim().toLowerCase();
+    if (!normalized || seen.has(normalized)) continue;
+    seen.add(normalized);
+    ordered.push(normalized);
+  }
+  for (const channel of channels) {
+    const normalized = channel.id.trim().toLowerCase();
+    if (!normalized || seen.has(normalized)) continue;
+    seen.add(normalized);
+    ordered.push(normalized);
+  }
+  return ordered;
+}
+
+function applyHeartbeatTargetHints(
+  hints: ConfigUiHints,
+  channels: ChannelUiMetadata[],
+): ConfigUiHints {
+  const next: ConfigUiHints = { ...hints };
+  const channelList = listHeartbeatTargetChannels(channels);
+  const channelHelp = channelList.length ? ` Known channels: ${channelList.join(", ")}.` : "";
+  const help = `Delivery target ("last", "none", or a channel id).${channelHelp}`;
+  const paths = ["agents.defaults.heartbeat.target", "agents.list.*.heartbeat.target"];
+  for (const path of paths) {
+    const current = next[path] ?? {};
+    next[path] = {
+      ...current,
+      help: current.help ?? help,
+      placeholder: current.placeholder ?? "last",
+    };
+  }
+  return next;
+}
+
 function applyPluginSchemas(schema: ConfigSchema, plugins: PluginUiMetadata[]): ConfigSchema {
   const next = cloneSchema(schema);
   const root = asSchemaObject(next);
@@ -908,7 +952,10 @@ export function buildConfigSchema(params?: {
   const channels = params?.channels ?? [];
   if (plugins.length === 0 && channels.length === 0) return base;
   const mergedHints = applySensitiveHints(
-    applyChannelHints(applyPluginHints(base.uiHints, plugins), channels),
+    applyHeartbeatTargetHints(
+      applyChannelHints(applyPluginHints(base.uiHints, plugins), channels),
+      channels,
+    ),
   );
   const mergedSchema = applyChannelSchemas(applyPluginSchemas(base.schema, plugins), channels);
   return {

@@ -1,6 +1,13 @@
 import { createRequire } from "node:module";
 
-import { chunkMarkdownText, chunkText, resolveTextChunkLimit } from "../../auto-reply/chunk.js";
+import {
+  chunkByNewline,
+  chunkMarkdownText,
+  chunkText,
+  chunkTextWithMode,
+  resolveChunkMode,
+  resolveTextChunkLimit,
+} from "../../auto-reply/chunk.js";
 import {
   hasControlCommand,
   isControlCommandMessage,
@@ -17,7 +24,11 @@ import {
   resolveEnvelopeFormatOptions,
 } from "../../auto-reply/envelope.js";
 import { dispatchReplyFromConfig } from "../../auto-reply/reply/dispatch-from-config.js";
-import { buildMentionRegexes, matchesMentionPatterns } from "../../auto-reply/reply/mentions.js";
+import {
+  buildMentionRegexes,
+  matchesMentionPatterns,
+  matchesMentionWithExplicit,
+} from "../../auto-reply/reply/mentions.js";
 import { dispatchReplyWithBufferedBlockDispatcher } from "../../auto-reply/reply/provider-dispatcher.js";
 import { createReplyDispatcherWithTyping } from "../../auto-reply/reply/reply-dispatcher.js";
 import { finalizeInboundContext } from "../../auto-reply/reply/inbound-context.js";
@@ -156,8 +167,11 @@ export function createPluginRuntime(): PluginRuntime {
     },
     channel: {
       text: {
+        chunkByNewline,
         chunkMarkdownText,
         chunkText,
+        chunkTextWithMode,
+        resolveChunkMode,
         resolveTextChunkLimit,
         hasControlCommand,
         resolveMarkdownTableMode,
@@ -200,6 +214,7 @@ export function createPluginRuntime(): PluginRuntime {
       mentions: {
         buildMentionRegexes,
         matchesMentionPatterns,
+        matchesMentionWithExplicit,
       },
       reactions: {
         shouldAckReaction,

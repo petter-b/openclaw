@@ -38,9 +38,11 @@ import {
   isRateLimitAssistantError,
   isTimeoutErrorMessage,
   pickFallbackThinkingLevel,
+  type FailoverReason,
 } from "../pi-embedded-helpers.js";
 import { normalizeUsage, type UsageLike } from "../usage.js";
 
+import { compactEmbeddedPiSessionDirect } from "./compact.js";
 import { resolveGlobalLane, resolveSessionLane } from "./lanes.js";
 import { log } from "./logger.js";
 import { resolveModel } from "./model.js";
@@ -92,6 +94,8 @@ export async function runEmbeddedPiAgent(
       const provider = (params.provider ?? DEFAULT_PROVIDER).trim() || DEFAULT_PROVIDER;
       const modelId = (params.model ?? DEFAULT_MODEL).trim() || DEFAULT_MODEL;
       const agentDir = params.agentDir ?? resolveClawdbotAgentDir();
+      const fallbackConfigured =
+        (params.config?.agents?.defaults?.model?.fallbacks?.length ?? 0) > 0;
       await ensureClawdbotModelsJson(params.config, agentDir);
 
       const { model, error, authStorage, modelRegistry } = resolveModel(
@@ -164,6 +168,42 @@ export async function runEmbeddedPiAgent(
       const attemptedThinking = new Set<ThinkLevel>();
       let apiKeyInfo: ApiKeyInfo | null = null;
       let lastProfileId: string | undefined;
+
+      const resolveAuthProfileFailoverReason = (params: {
+        allInCooldown: boolean;
+        message: string;
+      }): FailoverReason => {
+        if (params.allInCooldown) return "rate_limit";
+        const classified = classifyFailoverReason(params.message);
+        return classified ?? "auth";
+      };
+
+      const throwAuthProfileFailover = (params: {
+        allInCooldown: boolean;
+        message?: string;
+        error?: unknown;
+      }): never => {
+        const fallbackMessage = `No available auth profile for ${provider} (all in cooldown or unavailable).`;
+        const message =
+          params.message?.trim() ||
+          (params.error ? describeUnknownError(params.error).trim() : "") ||
+          fallbackMessage;
+        const reason = resolveAuthProfileFailoverReason({
+          allInCooldown: params.allInCooldown,
+          message,
+        });
+        if (fallbackConfigured) {
+          throw new FailoverError(message, {
+            reason,
+            provider,
+            model: modelId,
+            status: resolveFailoverStatus(reason),
+            cause: params.error,
+          });
+        }
+        if (params.error instanceof Error) throw params.error;
+        throw new Error(message);
+      };
 
       const resolveApiKeyForCandidate = async (candidate?: string) => {
         return getApiKeyForModel({
@@ -238,16 +278,20 @@ export async function runEmbeddedPiAgent(
           break;
         }
         if (profileIndex >= profileCandidates.length) {
-          throw new Error(
-            `No available auth profile for ${provider} (all in cooldown or unavailable).`,
-          );
+          throwAuthProfileFailover({ allInCooldown: true });
         }
       } catch (err) {
-        if (profileCandidates[profileIndex] === lockedProfileId) throw err;
+        if (err instanceof FailoverError) throw err;
+        if (profileCandidates[profileIndex] === lockedProfileId) {
+          throwAuthProfileFailover({ allInCooldown: false, error: err });
+        }
         const advanced = await advanceAuthProfile();
-        if (!advanced) throw err;
+        if (!advanced) {
+          throwAuthProfileFailover({ allInCooldown: false, error: err });
+        }
       }
 
+      let overflowCompactionAttempted = false;
       try {
         while (true) {
           attemptedThinking.add(thinkLevel);
@@ -316,9 +360,42 @@ export async function runEmbeddedPiAgent(
           if (promptError && !aborted) {
             const errorText = describeUnknownError(promptError);
             if (isContextOverflowError(errorText)) {
-              const kind = isCompactionFailureError(errorText)
-                ? "compaction_failure"
-                : "context_overflow";
+              const isCompactionFailure = isCompactionFailureError(errorText);
+              // Attempt auto-compaction on context overflow (not compaction_failure)
+              if (!isCompactionFailure && !overflowCompactionAttempted) {
+                log.warn(
+                  `context overflow detected; attempting auto-compaction for ${provider}/${modelId}`,
+                );
+                overflowCompactionAttempted = true;
+                const compactResult = await compactEmbeddedPiSessionDirect({
+                  sessionId: params.sessionId,
+                  sessionKey: params.sessionKey,
+                  messageChannel: params.messageChannel,
+                  messageProvider: params.messageProvider,
+                  agentAccountId: params.agentAccountId,
+                  authProfileId: lastProfileId,
+                  sessionFile: params.sessionFile,
+                  workspaceDir: params.workspaceDir,
+                  agentDir,
+                  config: params.config,
+                  skillsSnapshot: params.skillsSnapshot,
+                  provider,
+                  model: modelId,
+                  thinkLevel,
+                  reasoningLevel: params.reasoningLevel,
+                  bashElevated: params.bashElevated,
+                  extraSystemPrompt: params.extraSystemPrompt,
+                  ownerNumbers: params.ownerNumbers,
+                });
+                if (compactResult.compacted) {
+                  log.info(`auto-compaction succeeded for ${provider}/${modelId}; retrying prompt`);
+                  continue;
+                }
+                log.warn(
+                  `auto-compaction failed for ${provider}/${modelId}: ${compactResult.reason ?? "nothing to compact"}`,
+                );
+              }
+              const kind = isCompactionFailure ? "compaction_failure" : "context_overflow";
               return {
                 payloads: [
                   {
@@ -393,9 +470,7 @@ export async function runEmbeddedPiAgent(
             }
             // FIX: Throw FailoverError for prompt errors when fallbacks configured
             // This enables model fallback for quota/rate limit errors during prompt submission
-            const promptFallbackConfigured =
-              (params.config?.agents?.defaults?.model?.fallbacks?.length ?? 0) > 0;
-            if (promptFallbackConfigured && isFailoverErrorMessage(errorText)) {
+            if (fallbackConfigured && isFailoverErrorMessage(errorText)) {
               throw new FailoverError(errorText, {
                 reason: promptFailoverReason ?? "unknown",
                 provider,
@@ -419,8 +494,6 @@ export async function runEmbeddedPiAgent(
             continue;
           }
 
-          const fallbackConfigured =
-            (params.config?.agents?.defaults?.model?.fallbacks?.length ?? 0) > 0;
           const authFailure = isAuthAssistantError(lastAssistant);
           const rateLimitFailure = isRateLimitAssistantError(lastAssistant);
           const failoverFailure = isFailoverAssistantError(lastAssistant);

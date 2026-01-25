@@ -1,5 +1,8 @@
 import { afterAll, afterEach, beforeEach, vi } from "vitest";
 
+// Ensure Vitest environment is properly set
+process.env.VITEST = "true";
+
 import type {
   ChannelId,
   ChannelOutboundAdapter,
@@ -7,9 +10,12 @@ import type {
 } from "../src/channels/plugins/types.js";
 import type { ClawdbotConfig } from "../src/config/config.js";
 import type { OutboundSendDeps } from "../src/infra/outbound/deliver.js";
+import { installProcessWarningFilter } from "../src/infra/warnings.js";
 import { setActivePluginRegistry } from "../src/plugins/runtime.js";
 import { createTestRegistry } from "../src/test-utils/channel-plugins.js";
 import { withIsolatedTestHome } from "./test-env";
+
+installProcessWarningFilter();
 
 const testEnv = withIsolatedTestHome();
 afterAll(() => testEnv.cleanup());
