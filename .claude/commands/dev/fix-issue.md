@@ -33,11 +33,18 @@ Fix issue #$1 from clawdbot/clawdbot.
 - Run `pnpm test --run` until green
 - Keep changes focused - fix only this issue
 
-### 4. Quality Gate
+### 4. Refactor (TDD Refactor)
+- Review changes with KISS/YAGNI lens
+- Can anything be **removed** rather than added?
+- Inline single-use helpers, delete dead code
+- Keep tests green throughout
+- Stay focused on the fix - no unrelated cleanup
+
+### 5. Quality Gate
 - Run `/dev:gate` (lint, build, test)
 - Fix any issues before proceeding
 
-### 5. Prepare for PR
+### 6. Prepare for PR
 - Add CHANGELOG entry: `- Area: description. (#$1)`
 - Commit with: `scripts/committer "fix: description (#$1)" <files>`
 
