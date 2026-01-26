@@ -2,11 +2,23 @@
 
 Docs: https://docs.clawd.bot
 
+## 2026.1.25
+Status: unreleased.
+
+### Changes
+- Doctor: warn on gateway exposure without auth. (#2016) Thanks @Alex-Alaniz.
+- Docs: add Vercel AI Gateway to providers sidebar. (#1901) Thanks @jerilynzheng.
+- Agents: expand cron tool description with full schema docs. (#1988) Thanks @tomascupr.
+- Skills: add missing dependency metadata for GitHub, Notion, Slack, Discord. (#1995) Thanks @jackheuberger.
+- Docs: add Render deployment guide. (#1975) Thanks @anurag.
+- CI: increase Node heap size for macOS checks. (#1890) Thanks @realZachi.
+
 ## 2026.1.24-3
 
 ### Fixes
 - Gateway: harden reverse proxy handling for local-client detection and unauthenticated proxied connects. (#1795) Thanks @orlyjamie.
 - Security audit: flag loopback Control UI with auth disabled as critical. (#1795) Thanks @orlyjamie.
+- CLI: resume claude-cli sessions and stream CLI replies to TUI clients. (#1921) Thanks @rmorse.
 
 ## 2026.1.24-2
 
