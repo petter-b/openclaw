@@ -63,7 +63,7 @@ spec:
 
           echo ""
           echo "=== Cloning upstream ==="
-          git clone --depth 1 https://github.com/clawdbot/clawdbot.git /app
+          git clone --depth 1 https://github.com/openclaw/openclaw.git /app
           cd /app
           echo "Commit: $(git rev-parse --short HEAD)"
 

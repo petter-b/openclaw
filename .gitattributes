@@ -2,5 +2,6 @@
 
 # Keep fork-specific files during upstream merges
 CLAUDE.md merge=ours
+AGENTS.md merge=ours
 .workflow/** merge=ours
 .claude/** merge=ours
