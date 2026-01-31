@@ -51,10 +51,7 @@ type CoreAgentDeps = {
   ensureAgentWorkspace: (params?: { dir: string }) => Promise<void>;
   resolveStorePath: (store?: string, opts?: { agentId?: string }) => string;
   loadSessionStore: (storePath: string) => Record<string, unknown>;
-  saveSessionStore: (
-    storePath: string,
-    store: Record<string, unknown>,
-  ) => Promise<void>;
+  saveSessionStore: (storePath: string, store: Record<string, unknown>) => Promise<void>;
   resolveSessionFilePath: (
     sessionId: string,
     entry: unknown,
@@ -86,9 +83,9 @@ function findPackageRoot(startDir: string, name: string): string | null {
   }
 }
 
-function resolveClawdbotRoot(): string {
+function resolveOpenClawRoot(): string {
   if (coreRootCache) return coreRootCache;
-  const override = process.env.CLAWDBOT_ROOT?.trim();
+  const override = process.env.OPENCLAW_ROOT?.trim();
   if (override) {
     coreRootCache = override;
     return override;
@@ -107,20 +104,20 @@ function resolveClawdbotRoot(): string {
   }
 
   for (const start of candidates) {
-    const found = findPackageRoot(start, "clawdbot");
-    if (found) {
-      coreRootCache = found;
-      return found;
+    for (const name of ["openclaw"]) {
+      const found = findPackageRoot(start, name);
+      if (found) {
+        coreRootCache = found;
+        return found;
+      }
     }
   }
 
-  throw new Error(
-    "Unable to resolve Clawdbot root. Set CLAWDBOT_ROOT to the package root.",
-  );
+  throw new Error("Unable to resolve core root. Set OPENCLAW_ROOT to the package root.");
 }
 
 async function importCoreModule<T>(relativePath: string): Promise<T> {
-  const root = resolveClawdbotRoot();
+  const root = resolveOpenClawRoot();
   const distPath = path.join(root, "dist", relativePath);
   if (!fs.existsSync(distPath)) {
     throw new Error(
