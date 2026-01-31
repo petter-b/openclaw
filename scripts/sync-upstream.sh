@@ -40,8 +40,8 @@ if [[ -f .gitattributes ]]; then
     if [[ -n "$MERGE_OURS_PATTERNS" ]]; then
         VIOLATIONS=""
         while IFS= read -r pattern; do
-            # Skip files allowed to exist in both fork and upstream
-            if [[ "$pattern" = "CLAUDE.md" || "$pattern" = "AGENTS.md" ]]; then
+            # Skip CLAUDE.md - it's allowed to exist in upstream
+            if [[ "$pattern" = "CLAUDE.md" ]]; then
                 continue
             fi
 
