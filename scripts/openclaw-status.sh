@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
-# Check status of all registered Clawdbot instances
+# Check status of all registered OpenClaw instances
 #
 # Usage:
-#   ./scripts/clawdbot-status.sh          # Check all instances
-#   ./scripts/clawdbot-status.sh -v       # Verbose (show version info)
-#   ./scripts/clawdbot-status.sh -j       # Output as JSON
-#   ./scripts/clawdbot-status.sh <id>     # Check specific instance
+#   ./scripts/openclaw-status.sh          # Check all instances
+#   ./scripts/openclaw-status.sh -v       # Verbose (show version info)
+#   ./scripts/openclaw-status.sh -j       # Output as JSON
+#   ./scripts/openclaw-status.sh <id>     # Check specific instance
 #
-# Reads from: scripts/clawdbot-instances.json
+# Reads from: scripts/openclaw-instances.json
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-INSTANCES_FILE="$SCRIPT_DIR/clawdbot-instances.json"
+INSTANCES_FILE="$SCRIPT_DIR/openclaw-instances.json"
 
 # Colors
 RED='\033[0;31m'
@@ -75,7 +75,7 @@ check_instance() {
   if [[ "$platform" == "k8s" ]]; then
     # For k8s, use kubectl to check if pod is running
     local pod_status
-    pod_status=$(kubectl -n clawdbot get pods -l "app=${id}" -o jsonpath='{.items[0].status.phase}' 2>/dev/null || echo "NotFound")
+    pod_status=$(kubectl -n openclaw get pods -l "app=${id}" -o jsonpath='{.items[0].status.phase}' 2>/dev/null || echo "NotFound")
 
     if [[ "$pod_status" == "Running" ]]; then
       status="running"
@@ -146,7 +146,7 @@ check_instance() {
 # Header
 if ! $JSON_OUTPUT; then
   echo ""
-  echo "=== Clawdbot Instance Status ==="
+  echo "=== OpenClaw Instance Status ==="
   echo ""
   printf "%-20s" "ID"
   printf "%-14s" "STATUS"

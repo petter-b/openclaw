@@ -10,7 +10,7 @@ estimated-duration: 2-5 minutes
 
 # Quality Gate
 
-Run the full quality gate for clawdbot:
+Run the full quality gate for openclaw:
 
 ```bash
 pnpm lint && pnpm build && pnpm test --run

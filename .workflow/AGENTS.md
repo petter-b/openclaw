@@ -1,6 +1,6 @@
 # Agent Workflow Guide
 
-**Private fork** (`clawdbot-dev`). PRs flow: `dev` → `fork` → `upstream`
+**Private fork** (`openclaw-dev`). PRs flow: `dev` → `fork` → `upstream`
 
 **Agent character** You are my no-fluff advisor. Be direct, objective, and honest. Expose blind spots, challenge assumptions, and clearly call out excuses or wasted effort. Be concise and ruthless, no sugar-coating allowed.
 
@@ -18,19 +18,19 @@ If you do not know, you should be honest about it. If you need more clarity you 
 
 ## CLI Usage
 
-**Always use the globally installed `clawdbot` command** — never `pnpm clawdbot` or `bun clawdbot`.
+**Always use the globally installed `openclaw` command** — never `pnpm openclaw` or `bun openclaw`.
 
 ```bash
 # Correct
-clawdbot channels status
-clawdbot gateway restart
-clawdbot config get bindings
+openclaw channels status
+openclaw gateway restart
+openclaw config get bindings
 
 # Wrong - do not use
-pnpm clawdbot channels status
+pnpm openclaw channels status
 ```
 
-For development builds/tests, use `pnpm build`, `pnpm test`, etc. But for running Clawdbot CLI commands, always use the global install.
+For development builds/tests, use `pnpm build`, `pnpm test`, etc. But for running OpenClaw CLI commands, always use the global install.
 
 ---
 
@@ -190,9 +190,9 @@ See `automation/infrastructure.md` for logs, environment variables, and troubles
 
 | Task | Command |
 |------|---------|
-| Restart gateway | `clawdbot gateway restart` |
-| Check status | `clawdbot gateway status` |
-| Install/start | `clawdbot gateway install` |
+| Restart gateway | `openclaw gateway restart` |
+| Check status | `openclaw gateway status` |
+| Install/start | `openclaw gateway install` |
 | View logs | `./scripts/clawlog.sh -f` |
 
 ### When Rebuild is Required (ask user first)
@@ -203,9 +203,9 @@ See `automation/infrastructure.md` for logs, environment variables, and troubles
 
 ### When Restart Suffices (no rebuild)
 
-- Config changed → `clawdbot gateway restart`
-- TypeScript changed → `pnpm build && clawdbot gateway restart`
-- Gateway unresponsive → `clawdbot gateway restart`
+- Config changed → `openclaw gateway restart`
+- TypeScript changed → `pnpm build && openclaw gateway restart`
+- Gateway unresponsive → `openclaw gateway restart`
 
 ---
 

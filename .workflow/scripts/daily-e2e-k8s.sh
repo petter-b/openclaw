@@ -3,18 +3,18 @@
 # Runs E2E tests against a gateway instance in the cluster
 #
 # Prerequisites:
-# - kubectl configured with access to clawdbot namespace
-# - clawdbot-gateway deployment running (or will use internal gateway)
+# - kubectl configured with access to openclaw namespace
+# - openclaw-gateway deployment running (or will use internal gateway)
 #
 # Usage: ./.workflow/scripts/daily-e2e-k8s.sh
 
 set -euo pipefail
 
-K8S_NAMESPACE="${CLAWDBOT_K8S_NAMESPACE:-clawdbot}"
+K8S_NAMESPACE="${OPENCLAW_K8S_NAMESPACE:-openclaw}"
 JOB_NAME="daily-e2e"
-GATEWAY_HOST="${CLAWDBOT_GATEWAY_HOST:-clawdbot-gateway.$K8S_NAMESPACE.svc.cluster.local}"
-GATEWAY_PORT="${CLAWDBOT_GATEWAY_PORT:-8080}"
-RESULTS_DIR="$HOME/.clawdbot/daily-builds"
+GATEWAY_HOST="${OPENCLAW_GATEWAY_HOST:-openclaw-gateway.$K8S_NAMESPACE.svc.cluster.local}"
+GATEWAY_PORT="${OPENCLAW_GATEWAY_PORT:-8080}"
+RESULTS_DIR="$HOME/.openclaw/daily-builds"
 mkdir -p "$RESULTS_DIR"
 
 echo "=== E2E Tests: $(date) ==="
@@ -49,9 +49,9 @@ spec:
       - name: runner
         image: node:22-bookworm
         env:
-        - name: CLAWDBOT_GATEWAY_URL
+        - name: OPENCLAW_GATEWAY_URL
           value: "ws://$GATEWAY_HOST:$GATEWAY_PORT"
-        - name: CLAWDBOT_SKIP_PROVIDERS
+        - name: OPENCLAW_SKIP_PROVIDERS
           value: "1"
         resources:
           requests:
@@ -64,8 +64,8 @@ spec:
         args:
         - |
           set -e
-          echo "=== E2E Tests Started: $(date) ==="
-          echo "Gateway URL: \$CLAWDBOT_GATEWAY_URL"
+          echo "=== E2E Tests Started: \$(date) ==="
+          echo "Gateway URL: \$OPENCLAW_GATEWAY_URL"
 
           echo ""
           echo "=== Cloning upstream ==="

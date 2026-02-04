@@ -61,11 +61,11 @@ const spawnGatewayInstance = async (name: string): Promise<GatewayInstance> => {
 
   // Create isolated HOME directory
   const homeDir = await fs.mkdtemp(
-    path.join(os.tmpdir(), `clawdbot-e2e-${name}-`),
+    path.join(os.tmpdir(), `openclaw-e2e-${name}-`),
   );
 
   // Create config in isolated HOME
-  const configDir = path.join(homeDir, ".clawdbot");
+  const configDir = path.join(homeDir, ".openclaw");
   await fs.mkdir(configDir, { recursive: true });
 
   // Spawn with isolated environment
@@ -159,7 +159,7 @@ const runCliJson = async (args: string[], env: NodeJS.ProcessEnv): Promise<unkno
 // Usage
 const health = await runCliJson(
   ["health", "--json", "--timeout", "10000"],
-  { CLAWDBOT_GATEWAY_PORT: String(port) }
+  { OPENCLAW_GATEWAY_PORT: String(port) }
 );
 expect(health.ok).toBe(true);
 ```

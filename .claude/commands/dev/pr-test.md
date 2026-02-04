@@ -12,7 +12,7 @@ success-criteria: |
 
 # Test PR Locally
 
-Test PR #$1 from clawdbot/clawdbot.
+Test PR #$1 from openclaw/openclaw.
 
 ## Workflow
 
@@ -23,7 +23,7 @@ git checkout -b temp/test-pr-$1 main
 
 ### 2. Fetch PR Code
 ```bash
-gh pr checkout $1 --repo clawdbot/clawdbot --branch temp/test-pr-$1
+gh pr checkout $1 --repo openclaw/openclaw --branch temp/test-pr-$1
 ```
 
 ### 3. Install Dependencies
@@ -42,7 +42,7 @@ pnpm test:e2e
 ```
 
 ### 6. Manual Testing (if applicable)
-- Start gateway: `pnpm clawdbot gateway --verbose`
+- Start gateway: `pnpm openclaw gateway --verbose`
 - Test the specific feature/fix mentioned in PR
 
 ### 7. Clean Up

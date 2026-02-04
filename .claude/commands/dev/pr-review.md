@@ -12,7 +12,7 @@ success-criteria: |
 
 # PR Review
 
-Review PR #$1 from clawdbot/clawdbot using the `reviewing-code` skill.
+Review PR #$1 from openclaw/openclaw using the `reviewing-code` skill.
 
 **IMPORTANT: Read-only review. Do NOT checkout the branch or modify any code.**
 
@@ -20,8 +20,8 @@ Review PR #$1 from clawdbot/clawdbot using the `reviewing-code` skill.
 
 ### 1. Fetch PR Details
 ```bash
-gh pr view $1 --repo clawdbot/clawdbot
-gh pr diff $1 --repo clawdbot/clawdbot
+gh pr view $1 --repo openclaw/openclaw
+gh pr diff $1 --repo openclaw/openclaw
 ```
 
 ### 2. Apply Review Checklist

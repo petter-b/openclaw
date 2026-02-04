@@ -18,7 +18,7 @@ Summon domain-expert wizards for interactive sessions. Each wizard primes the ag
 
 | Command | Domain | Description |
 |---------|--------|-------------|
-| `/wiz:core [path]` | Architecture | Clawdbot product internals: gateway, agents, providers, data flow |
+| `/wiz:core [path]` | Architecture | OpenClaw product internals: gateway, agents, providers, data flow |
 | `/wiz:workflow [path]` | Dev Process | Development workflow, hotfixes, releases, project management |
 | `/wiz:help` | - | This help |
 
@@ -53,7 +53,7 @@ Summon domain-expert wizards for interactive sessions. Each wizard primes the ag
 
 ```
 > /wiz:core
-Primed for Clawdbot architecture questions.
+Primed for OpenClaw architecture questions.
 
 > How does message routing work?
 [Agent answers with specific file references from exploration]
@@ -65,7 +65,7 @@ Dev Workflow Primed
 ...
 
 > /wiz:core /tmp/arch.txt
-Report written to /tmp/arch.txt. Primed for Clawdbot architecture questions.
+Report written to /tmp/arch.txt. Primed for OpenClaw architecture questions.
 ```
 
 ---

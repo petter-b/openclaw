@@ -86,9 +86,9 @@ From `.workflow/AGENTS.md`, understand the three-remote model:
 
 | Remote | Repository | Purpose |
 |--------|------------|---------|
-| `dev` | petter-b/clawdbot-dev (private) | Daily development |
-| `fork` | petter-b/clawdbot (public) | PR staging |
-| `upstream` | clawdbot/clawdbot | PR target only |
+| `dev` | petter-b/openclaw-dev (private) | Daily development |
+| `fork` | petter-b/openclaw (public) | PR staging |
+| `upstream` | openclaw/openclaw | PR target only |
 
 **PR Flow:** dev → fork → upstream
 
@@ -118,7 +118,7 @@ Hotfix System:
 
 Release Builds:
   Build:       /build:mac-release [version]
-  Artifacts:   .worktrees/latest/dist/Clawdbot.app
+  Artifacts:   .worktrees/latest/dist/OpenClaw.app
   Latest:      .local/latest symlink
 
 Git Model:

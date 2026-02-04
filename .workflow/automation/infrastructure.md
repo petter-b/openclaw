@@ -6,7 +6,7 @@
 
 ## tmux
 
-Socket: `${TMPDIR}/clawdbot-tmux-sockets/clawdbot.sock`
+Socket: `${TMPDIR}/openclaw-tmux-sockets/openclaw.sock`
 
 ## Daily Builds
 
@@ -16,7 +16,7 @@ Socket: `${TMPDIR}/clawdbot-tmux-sockets/clawdbot.sock`
 | `./.workflow/scripts/daily-build.sh` | ARM (local) |
 | `./.workflow/scripts/daily-build-k8s.sh` | x86 (k8s) |
 
-Results: `~/.clawdbot/daily-builds/summary-$(date +%Y-%m-%d).log`
+Results: `~/.openclaw/daily-builds/summary-$(date +%Y-%m-%d).log`
 
 ---
 
@@ -24,12 +24,12 @@ Results: `~/.clawdbot/daily-builds/summary-$(date +%Y-%m-%d).log`
 
 | Variable | Purpose |
 |----------|---------|
-| `CLAWDBOT_CONFIG_PATH` | Config file location |
-| `CLAWDBOT_GATEWAY_URL` | Gateway WebSocket URL |
-| `CLAWDBOT_GATEWAY_PORT` | Gateway port |
-| `CLAWDBOT_TMUX_SOCKET_DIR` | tmux socket directory |
-| `CLAWDBOT_SKIP_PROVIDERS` | Skip provider init (testing) |
-| `CLAWDBOT_ENABLE_BRIDGE_IN_TESTS` | Enable bridge (testing) |
+| `OPENCLAW_CONFIG_PATH` | Config file location |
+| `OPENCLAW_GATEWAY_URL` | Gateway WebSocket URL |
+| `OPENCLAW_GATEWAY_PORT` | Gateway port |
+| `OPENCLAW_TMUX_SOCKET_DIR` | tmux socket directory |
+| `OPENCLAW_SKIP_PROVIDERS` | Skip provider init (testing) |
+| `OPENCLAW_ENABLE_BRIDGE_IN_TESTS` | Enable bridge (testing) |
 
 ---
 
@@ -38,7 +38,7 @@ Results: `~/.clawdbot/daily-builds/summary-$(date +%Y-%m-%d).log`
 | Log | Location |
 |-----|----------|
 | Gateway | stdout/stderr |
-| Sessions | `~/.clawdbot/agents/main/sessions/*.jsonl` |
+| Sessions | `~/.openclaw/agents/main/sessions/*.jsonl` |
 | Agent | `~/.claude/session.log` |
 | macOS unified | `./scripts/clawlog.sh --follow` |
 
@@ -57,13 +57,12 @@ Run before upstream syncs to ensure `.gitattributes` merge=ours only protects fo
 ## Troubleshooting
 
 ```bash
-pgrep -f clawdbot && pkill -f clawdbot    # Stuck processes
+pgrep -f openclaw && pkill -f openclaw    # Stuck processes
 lsof -i :8080                             # Port conflicts
 git worktree list                         # Worktree issues
 pnpm format                               # Lint auto-fix
 tailscale status                          # Network check
-ls -la ${TMPDIR}/clawdbot-tmux-sockets/   # tmux sockets
+ls -la ${TMPDIR}/openclaw-tmux-sockets/   # tmux sockets
 tmux -S $SOCKET kill-server               # Reset tmux
 ./.workflow/scripts/audit-fork-config.sh  # Validate fork config
 ```
-

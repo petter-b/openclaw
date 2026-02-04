@@ -1,6 +1,6 @@
 {
-  "_comment": "Registry of all Clawdbot instances. Edit to add/remove instances.",
-  "_docs": "Run ./scripts/clawdbot-status.sh to check all instances",
+  "_comment": "Registry of all OpenClaw instances. Edit to add/remove instances.",
+  "_docs": "Run ./scripts/openclaw-status.sh to check all instances",
 
   "instances": [
     {
@@ -13,9 +13,9 @@
       "host": "localhost",
       "port": 18789,
       "healthEndpoint": "http://localhost:18789/health",
-      "logsCommand": "~/Projects/clawdbot/clawdbot/scripts/clawlog.sh --tail 30m",
+      "logsCommand": "~/Projects/openclaw/openclaw/scripts/clawlog.sh --tail 30m",
       "managedBy": "menubar-app",
-      "notes": "Primary production instance via Clawdbot.app"
+      "notes": "Primary production instance via OpenClaw.app"
     }
   ],
 
@@ -32,7 +32,7 @@
       "host": "localhost",
       "port": 18790,
       "healthEndpoint": "http://localhost:18790/health",
-      "logsCommand": "tail -100 ~/.clawdbot/dev.log",
+      "logsCommand": "tail -100 ~/.openclaw/dev.log",
       "managedBy": "manual",
       "notes": "Started from .worktrees/branch-name"
     },
@@ -44,10 +44,10 @@
       "platform": "k8s",
       "arch": "x86_64",
       "version": "latest",
-      "host": "clawdbot-staging.clawdbot.svc.cluster.local",
+      "host": "openclaw-staging.openclaw.svc.cluster.local",
       "port": 8080,
-      "healthEndpoint": "http://clawdbot-staging.clawdbot.svc.cluster.local:8080/health",
-      "logsCommand": "kubectl -n clawdbot logs -l app=clawdbot-staging --tail=100",
+      "healthEndpoint": "http://openclaw-staging.openclaw.svc.cluster.local:8080/health",
+      "logsCommand": "kubectl -n openclaw logs -l app=openclaw-staging --tail=100",
       "managedBy": "k8s-deployment",
       "notes": "x86 staging instance"
     },
@@ -62,7 +62,7 @@
       "host": "localhost",
       "port": 18791,
       "healthEndpoint": "http://localhost:18791/health",
-      "logsCommand": "tail -100 ~/.clawdbot/pr-test.log",
+      "logsCommand": "tail -100 ~/.openclaw/pr-test.log",
       "managedBy": "manual",
       "notes": "Ephemeral instance for testing PR"
     }

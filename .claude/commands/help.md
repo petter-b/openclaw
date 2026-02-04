@@ -2,7 +2,7 @@
 description: Show all available commands and help resources
 ---
 
-# Clawdbot Commands
+# OpenClaw Commands
 
 Available command namespaces and help resources.
 
@@ -61,7 +61,7 @@ For comprehensive documentation on each namespace, use:
 pnpm install        # Install dependencies
 pnpm build          # TypeScript compilation
 pnpm test           # Run tests
-pnpm clawdbot ...   # Run CLI in dev mode
+pnpm openclaw ...   # Run CLI in dev mode
 ```
 
 **Before every commit:** Always run `/dev:gate` first.

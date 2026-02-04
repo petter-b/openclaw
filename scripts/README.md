@@ -10,7 +10,7 @@ These scripts exist **only in this fork** and will never conflict with upstream:
 |--------|---------|
 | `apply-release-fixes.sh` | Apply hotfix/* branches to release builds |
 | `build-release.sh` | Build macOS companion app from releases with hotfixes |
-| `clawdbot-status.sh` | Monitor multiple Clawdbot instances |
+| `openclaw-status.sh` | Monitor multiple OpenClaw instances |
 | `deploy-release.sh` | Deploy built macOS app to /Applications (requires sudo) |
 | `e2e-with-gateway.sh` | Run E2E tests with test gateway |
 | `rebase-hotfixes.sh` | Rebase hotfix/* branches onto target releases |

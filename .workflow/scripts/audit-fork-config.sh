@@ -101,7 +101,7 @@ echo ""
 FORK_SCRIPTS=(
     "apply-release-fixes.sh"
     "build-release.sh"
-    "clawdbot-status.sh"
+    "openclaw-status.sh"
     "deploy-release.sh"
     "e2e-with-gateway.sh"
     "rebase-hotfixes.sh"

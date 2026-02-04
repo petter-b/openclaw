@@ -59,7 +59,7 @@ Review workflow documentation for Claude Code best practices.
 
 SCOPE: Only report Claude Code-specific issues.
 - IN SCOPE: hooks, slash commands, settings.json, tools, subagent_types
-- OUT OF SCOPE: Clawdbot CLI, test patterns, codebase structure
+- OUT OF SCOPE: OpenClaw CLI, test patterns, codebase structure
 
 Discover files:
 - Glob for .claude/**/*.md, .claude/**/*.json, .claude/**/*.sh
@@ -72,7 +72,7 @@ Check for:
 - Correct subagent_type usage
 
 KNOWN BUILT-INS (do NOT flag as missing):
-- subagent_types: claude-code-guide, clawdbot-guide, Explore, Plan, general-purpose
+- subagent_types: claude-code-guide, openclaw-guide, Explore, Plan, general-purpose
 - These do NOT need .claude/agents/ definitions
 
 HIGH-SIGNAL ONLY - Report issues that are:
@@ -101,15 +101,15 @@ issues:
 If no issues: Return `issues: []`
 ```
 
-### Agent 2: Clawdbot Guide (model: sonnet)
+### Agent 2: OpenClaw Guide (model: sonnet)
 
 ```
-subagent_type: clawdbot-guide
+subagent_type: openclaw-guide
 model: sonnet
 
-Review workflow documentation for Clawdbot accuracy.
+Review workflow documentation for OpenClaw accuracy.
 
-SCOPE: Only report Clawdbot-specific issues.
+SCOPE: Only report OpenClaw-specific issues.
 - IN SCOPE: CLI commands, test patterns, file paths, src/ structure, package.json scripts
 - OUT OF SCOPE: Claude Code features, hooks, slash command syntax, tool names
 

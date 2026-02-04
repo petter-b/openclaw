@@ -43,7 +43,7 @@ Available commands in the `dev:` namespace:
 pnpm install        # Install dependencies
 pnpm build          # TypeScript compilation
 pnpm test           # Run tests
-pnpm clawdbot ...   # Run CLI in dev mode
+pnpm openclaw ...   # Run CLI in dev mode
 ```
 
 **Before committing:** Always run `/dev:gate` first.

@@ -3,16 +3,16 @@
 # Runs lint, build, test on x86 architecture (matches upstream CI)
 #
 # Prerequisites:
-# - kubectl configured with access to clawdbot namespace
+# - kubectl configured with access to openclaw namespace
 # - k8s cluster with x86 nodes
 #
 # Usage: ./.workflow/scripts/daily-build-k8s.sh
 
 set -euo pipefail
 
-K8S_NAMESPACE="${CLAWDBOT_K8S_NAMESPACE:-clawdbot}"
+K8S_NAMESPACE="${OPENCLAW_K8S_NAMESPACE:-openclaw}"
 JOB_NAME="daily-build-x86"
-RESULTS_DIR="$HOME/.clawdbot/daily-builds"
+RESULTS_DIR="$HOME/.openclaw/daily-builds"
 mkdir -p "$RESULTS_DIR"
 
 echo "=== x86 Daily Build: $(date) ==="

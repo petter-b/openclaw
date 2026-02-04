@@ -1,12 +1,12 @@
 ---
-description: Summon architecture wizard - prime agent with Clawdbot product internals
+description: Summon architecture wizard - prime agent with OpenClaw product internals
 allowed-tools: Bash, Glob, Grep, Read, Task, Write
 argument-hint: "[path]"
 ---
 
-# Wizard: Clawdbot Core Architecture
+# Wizard: OpenClaw Core Architecture
 
-You are summoning an architecture wizard. Prime yourself with deep understanding of Clawdbot's product architecture for an interactive session.
+You are summoning an architecture wizard. Prime yourself with deep understanding of OpenClaw's product architecture for an interactive session.
 
 **Output path:** `$PATH` (default: `/dev/null`)
 
@@ -50,7 +50,7 @@ src/
 
 | Priority | File | Purpose |
 |----------|------|---------|
-| 1 | `src/config/types.ts` | ClawdbotConfig schema - the configuration shape |
+| 1 | `src/config/types.ts` | OpenClawConfig schema - the configuration shape |
 | 2 | `src/gateway/server.ts` | Gateway WebSocket server - the control plane |
 | 3 | `src/gateway/protocol/schema.ts` | Protocol types (GatewayFrame, ChatEvent) |
 | 4 | `src/routing/resolve-route.ts` | Session routing logic |
@@ -123,7 +123,7 @@ Create a concise internal summary covering:
 **Report content:**
 
 ```
-Clawdbot Architecture Primed
+OpenClaw Architecture Primed
 ============================
 
 Modules:
@@ -157,15 +157,15 @@ Follow this conditional pattern based on `$PATH`:
 2. **Route output based on path:**
    - **If `$PATH` is `/dev/null`:**
      - Write nothing
-     - Respond with: "Primed for Clawdbot architecture questions."
+     - Respond with: "Primed for OpenClaw architecture questions."
 
    - **If `$PATH` is `/dev/stdout`:**
      - Display the full report above directly in your response
-     - End with: "Primed for Clawdbot architecture questions."
+     - End with: "Primed for OpenClaw architecture questions."
 
    - **Otherwise (any other path):**
      - Use Write tool to save the report to `$PATH`
-     - Respond with: "Report written to `$PATH`. Primed for Clawdbot architecture questions."
+     - Respond with: "Report written to `$PATH`. Primed for OpenClaw architecture questions."
 
 ---
 

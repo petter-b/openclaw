@@ -10,7 +10,7 @@ echo ""
 FORK_SCRIPTS=(
   "scripts/apply-release-fixes.sh"
   "scripts/build-release.sh"
-  "scripts/clawdbot-status.sh"
+  "scripts/openclaw-status.sh"
   "scripts/deploy-release.sh"
   "scripts/e2e-with-gateway.sh"
   "scripts/rebase-hotfixes.sh"

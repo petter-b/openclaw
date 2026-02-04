@@ -36,8 +36,8 @@ See `references/patterns.md` for:
 
 See `references/env-vars.md` for:
 - `HOME` - Isolated home directory per test
-- `CLAWDBOT_GATEWAY_TOKEN` - Auth token (empty for no auth)
-- `CLAWDBOT_SKIP_PROVIDERS` - Skip provider initialization
+- `OPENCLAW_GATEWAY_TOKEN` - Auth token (empty for no auth)
+- `OPENCLAW_SKIP_PROVIDERS` - Skip provider initialization
 
 ## Source of Truth
 

@@ -29,8 +29,8 @@ You are a code review orchestrator. When asked to review:
 
 **If PR number provided:**
 ```bash
-gh pr view $1 --repo clawdbot/clawdbot
-gh pr diff $1 --repo clawdbot/clawdbot
+gh pr view $1 --repo openclaw/openclaw
+gh pr diff $1 --repo openclaw/openclaw
 ```
 
 **If "current" specified:**

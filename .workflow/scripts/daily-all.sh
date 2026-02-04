@@ -14,7 +14,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-RESULTS_DIR="$HOME/.clawdbot/daily-builds"
+RESULTS_DIR="$HOME/.openclaw/daily-builds"
 mkdir -p "$RESULTS_DIR"
 SUMMARY_FILE="$RESULTS_DIR/summary-$(date +%Y-%m-%d).log"
 

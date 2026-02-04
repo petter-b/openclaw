@@ -11,7 +11,7 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-RESULTS_DIR="$HOME/.clawdbot/daily-builds"
+RESULTS_DIR="$HOME/.openclaw/daily-builds"
 mkdir -p "$RESULTS_DIR"
 RESULTS_FILE="$RESULTS_DIR/arm-$(date +%Y-%m-%d).log"
 

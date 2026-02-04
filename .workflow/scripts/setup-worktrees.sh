@@ -4,7 +4,7 @@
 
 set -euo pipefail
 
-SANDBOX_ROOT="${1:-$HOME/clawdbot-sandboxes}"
+SANDBOX_ROOT="${1:-$HOME/openclaw-sandboxes}"
 REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 
 echo "Setting up agent worktrees..."

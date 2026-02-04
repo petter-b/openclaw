@@ -23,7 +23,7 @@ fi
 # Match actual script execution: ./restart-mac, scripts/restart-mac, bash restart-mac, etc.
 if echo "$COMMAND" | grep -qE '(^|\./|/|bash\s+|sh\s+)restart-mac'; then
   cat >&2 <<'BLOCK'
-{"decision": "block", "reason": "Cannot run restart-mac.sh directly.\n\nTo restart Clawdbot on macOS:\n\n• Gateway daemon: clawdbot daemon restart\n• App only: Quit menubar icon, then: open /Applications/Clawdbot.app\n• Full rebuild: Use /build:mac-clean slash command"}
+{"decision": "block", "reason": "Cannot run restart-mac.sh directly.\n\nTo restart OpenClaw on macOS:\n\n• Gateway daemon: openclaw daemon restart\n• App only: Quit menubar icon, then: open /Applications/OpenClaw.app\n• Full rebuild: Use /build:mac-clean slash command"}
 BLOCK
   exit 2
 fi

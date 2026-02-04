@@ -14,7 +14,7 @@ hooks:
 
 # Build macOS Release
 
-Build the macOS companion app (Clawdbot.app) from an upstream release with hotfixes applied.
+Build the macOS companion app (OpenClaw.app) from an upstream release with hotfixes applied.
 
 **Note:** This builds the macOS app only - it does NOT build the CLI or other platforms.
 

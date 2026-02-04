@@ -1,17 +1,17 @@
 ---
 name: release-management
-description: Manages release builds, hotfix application, and deployment workflows for Clawdbot. Use when building releases, checking release status, applying hotfixes, deploying versions, or discussing release processes.
+description: Manages release builds, hotfix application, and deployment workflows for OpenClaw. Use when building releases, checking release status, applying hotfixes, deploying versions, or discussing release processes.
 allowed-tools: Bash(git:*), Bash(./scripts/*:*), Read, Grep, Glob, AskUserQuestion
 ---
 
 # Release Management
 
-Expert guidance for building, deploying, and managing Clawdbot releases with hotfixes.
+Expert guidance for building, deploying, and managing OpenClaw releases with hotfixes.
 
 ## Core Concepts
 
 ### Release Workflow
-Clawdbot uses a fork-based workflow with upstream synchronization:
+OpenClaw uses a fork-based workflow with upstream synchronization:
 1. **Upstream** releases are tagged versions from the main Claude Code repository
 2. **Hotfixes** are maintained in `hotfix/*` branches in the fork
 3. **Builds** are created in `.worktrees/latest` with hotfixes auto-applied
@@ -166,7 +166,7 @@ When updating versions across the codebase:
 - CLI: `package.json`
 - Android: `apps/android/app/build.gradle.kts`
 - iOS: `apps/ios/Sources/Info.plist`, `apps/ios/Tests/Info.plist`
-- macOS: `apps/macos/Sources/Clawdbot/Resources/Info.plist`
+- macOS: `apps/macos/Sources/OpenClaw/Resources/Info.plist`
 - Docs: `docs/install/updating.md`
 
 ## Related Commands

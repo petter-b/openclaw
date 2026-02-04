@@ -47,7 +47,7 @@ git checkout -b hotfix/my-fix
 
 - **Worktrees**: `.worktrees/latest/` - isolated build directory
 - **Latest symlink**: `.local/latest` → most recent build
-- **Built app**: `.worktrees/latest/dist/Clawdbot.app`
+- **Built app**: `.worktrees/latest/dist/OpenClaw.app`
 
 ## How Hotfixes Work
 

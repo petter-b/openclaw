@@ -25,7 +25,7 @@ Spawn TWO agents in parallel to review docs:
 Review workflow documentation for Claude Code best practices.
 
 SCOPE: Only report Claude Code-specific issues (hooks, slash commands, settings, tools, subagents).
-Do NOT comment on Clawdbot CLI commands, test patterns, or codebase structure.
+Do NOT comment on OpenClaw CLI commands, test patterns, or codebase structure.
 
 Discover files: Glob for .claude/**/* and .workflow/**/*
 
@@ -35,17 +35,17 @@ Check for:
 - Hook configuration accuracy (PreToolUse, PostToolUse, SessionStart, SessionEnd, Stop)
 - Slash command syntax (frontmatter: description, allowed-tools, argument-hint)
 
-NOTE: Built-in subagent_types (claude-code-guide, clawdbot-guide, Explore, Plan, general-purpose)
+NOTE: Built-in subagent_types (claude-code-guide, openclaw-guide, Explore, Plan, general-purpose)
 do NOT need definitions in .claude/agents/.
 
 Report issues as: ### [severity] file:line - Description
 ```
 
-**Agent 2: clawdbot-guide**
+**Agent 2: openclaw-guide**
 ```
-Review workflow documentation for Clawdbot accuracy.
+Review workflow documentation for OpenClaw accuracy.
 
-SCOPE: Only report Clawdbot-specific issues (CLI commands, test patterns, file paths, codebase structure).
+SCOPE: Only report OpenClaw-specific issues (CLI commands, test patterns, file paths, codebase structure).
 Do NOT comment on Claude Code features, hooks, slash command syntax, or tool configurations.
 
 Discover files: Glob for .workflow/**/*
