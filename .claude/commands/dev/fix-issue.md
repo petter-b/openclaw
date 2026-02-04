@@ -77,8 +77,8 @@ cd $WORKTREE && pnpm install
 
 Fix only this issue — no unrelated changes.
 
-- **Red:** Write a test that reproduces the bug. Run `pnpm test --run` in the worktree and confirm it **fails**.
-- **Green:** Write minimal code to make the test pass. Run `pnpm test --run` until green.
+- **Red:** Write a test that reproduces the bug. Run `pnpm test` in the worktree and confirm it **fails**.
+- **Green:** Write minimal code to make the test pass. Run `pnpm test` until green.
 - **Refactor:** Review with KISS/YAGNI lens — can anything be removed rather than added? Inline single-use helpers, delete dead code. No unrelated cleanup.
 
 ### 5. Quality Gate & Commit
@@ -86,7 +86,7 @@ Fix only this issue — no unrelated changes.
 Run the full gate inside the worktree:
 
 ```bash
-cd $WORKTREE && pnpm check && pnpm build && pnpm test --run
+cd $WORKTREE && pnpm check && pnpm build && pnpm test
 ```
 
 Fix any issues before proceeding.
