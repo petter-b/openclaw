@@ -33,7 +33,20 @@ Issue references (`#$ISSUE`, `Fixes #$ISSUE`) are **only included in PR-facing c
 
 ## Workflow
 
+### 0. Pre-flight Checks
+
+Verify the environment before doing any work. Fail fast if something is wrong.
+
+```bash
+# All checks in one pass — stop on first failure
+git remote get-url upstream >/dev/null 2>&1 || { echo "ERROR: 'upstream' remote not configured"; exit 1; }
+git remote get-url fork >/dev/null 2>&1 || { echo "ERROR: 'fork' remote not configured"; exit 1; }
+gh auth status >/dev/null 2>&1 || { echo "ERROR: gh not authenticated"; exit 1; }
+echo "Pre-flight OK"
+```
+
 ### 1. Understand the Issue
+
 - Fetch issue details: `gh issue view $ISSUE --repo $REPO`
 - Read related code to understand the problem
 - Identify the root cause
@@ -51,6 +64,7 @@ gh search prs --repo openclaw/openclaw "<keywords from issue>"
 ```
 
 Check the results:
+
 - **Duplicate issue exists?** → Link it and note in deliverables. If upstream already tracks this, the PR should reference their issue number instead.
 - **Open PR already fixes it?** → Stop. Report the existing PR to the user.
 - **Merged PR already fixed it?** → Check if the fix is on `upstream/main`. If so, stop — the issue is already resolved. If not yet released, note it.
@@ -70,6 +84,7 @@ git worktree add .worktrees/fix-$ISSUE -b fix-$ISSUE upstream/main
 All remaining steps happen inside the worktree. Compute the **absolute worktree path** (e.g., via `realpath .worktrees/fix-$ISSUE`) and use it for all subsequent commands and sub-agent prompts.
 
 Install deps:
+
 ```bash
 cd $WORKTREE && pnpm install
 ```
@@ -84,15 +99,21 @@ Use **targeted test runs** for fast Red/Green feedback (full suite runs in the g
 cd $WORKTREE && npx vitest run <test-file> --reporter=verbose
 ```
 
-- **Red:** Write a test that reproduces the bug. Run the specific test file and confirm it **fails**.
+- **Red:** Write a test that reproduces the bug. Run the specific test file and confirm it **fails**. Optionally verify the test hits the right code path:
+  ```bash
+  cd $WORKTREE && npx vitest run <test-file> --coverage --coverage.include=<target-source-file>
+  ```
 - **Green:** Write minimal code to make the test pass. Run the specific test file until green.
 - **Refactor:** Review with KISS/YAGNI lens — can anything be removed rather than added? Inline single-use helpers, delete dead code. No unrelated cleanup.
 
-**Test isolation for multi-layer fixes:** If the fix involves multiple defensive layers (e.g., a reachability guard *and* a `.catch()`), write separate tests for each layer. A single test can easily pass for the wrong reason — e.g., if a mock rejects a function that the guard already prevents from being called, the `.catch()` is never exercised even though the test *appears* to cover it.
+**Test isolation for multi-layer fixes:** If the fix involves multiple defensive layers (e.g., a reachability guard _and_ a `.catch()`), write separate tests for each layer. A single test can easily pass for the wrong reason — e.g., if a mock rejects a function that the guard already prevents from being called, the `.catch()` is never exercised even though the test _appears_ to cover it.
 
 Split into independent tests:
+
 - **Guard test:** verify the dangerous call is never made when the guard is active (e.g., `expect(fn).not.toHaveBeenCalled()`)
-- **Catch test:** mock the guard to allow the call through, *then* reject — verify the error is handled gracefully
+- **Catch test:** mock the guard to allow the call through, _then_ reject — verify the error is handled gracefully
+
+**Debugging:** If a test fails unexpectedly or the root cause is unclear, use `/gsd:debug` for systematic investigation before guessing at fixes.
 
 ### 5. Quality Gate & Commit
 
@@ -117,6 +138,7 @@ If all errors are pre-existing (not in your changed files), the gate passes.
 Fix any issues before proceeding.
 
 After the gate passes:
+
 - Add a CHANGELOG entry in `CHANGELOG.md` at the repo root (include `(#$ISSUE)` only if `IS_UPSTREAM`)
 - Commit changes on the working branch using `scripts/committer` (these get squashed later, so messages are informal)
 
@@ -162,6 +184,7 @@ Report:
 ```
 
 **After the agent reports:**
+
 - If NEEDS CHANGES → fix issues in the worktree → re-run gate → re-run review
 - If PASS → proceed to step 7
 
@@ -172,6 +195,7 @@ Report:
 All commands run inside the worktree. Create a clean PR branch with a single squashed commit.
 
 **PR branch naming:**
+
 - Derive a short kebab-case slug from the issue title (3-5 words max, e.g. `status-deep-gateway-crash`).
 - If `IS_UPSTREAM`: `fix/$ISSUE-$SLUG` (e.g. `fix/8392-status-deep-crash`)
 - Otherwise: `fix/$SLUG` (e.g. `fix/status-deep-gateway-crash`)
@@ -202,7 +226,8 @@ pnpm build && pnpm test
 # Push PR branch to fork (petter-b/openclaw)
 git push fork $PR_BRANCH
 
-# Submit draft PR against upstream — only include issue ref if IS_UPSTREAM
+# Submit draft PR against upstream
+# PR body is concise — optimized for automated reviewer approval
 gh pr create \
   --repo openclaw/openclaw \
   --head petter-b:$PR_BRANCH \
@@ -210,20 +235,16 @@ gh pr create \
   --draft \
   --title "fix: description" \
   --body "$(cat <<'EOF'
-## Summary
+Root cause: [one sentence]
 
-[Brief description of the fix and root cause]
+Fix: [one sentence]
 
-## Changes
-- [List of changes]
-
-## Test Plan
-- [How the fix was tested]
+Test: [what the test verifies]
 EOF
 )"
 ```
 
-**Issue references:** Only if `IS_UPSTREAM`, append `(#$ISSUE)` to the commit message and PR title, and add `Fixes #$ISSUE.` to the PR body. For non-upstream issues, omit all issue references from PR-facing content.
+**Issue references:** Only if `IS_UPSTREAM`, append `(#$ISSUE)` to the commit message and PR title, and add `Fixes #$ISSUE` on its own line in the PR body. For non-upstream issues, omit all issue references from PR-facing content.
 
 **Important:** The PR is created as a **draft**. The user will manually mark it as "ready for review".
 
@@ -241,6 +262,7 @@ After submission, automated reviewers (e.g., Greptile) may flag concerns. When t
 The worktree is left in place for future reference. Clean up after the PR is merged: `git worktree remove .worktrees/fix-$ISSUE` and `git branch -d fix-$ISSUE $PR_BRANCH`
 
 ## Deliverables
+
 1. Root cause identified
 2. Test file and case added (with independent tests per defensive layer where applicable)
 3. Implementation summary
@@ -250,6 +272,7 @@ The worktree is left in place for future reference. Clean up after the PR is mer
 7. Automated review feedback addressed (if any)
 
 ## Constraints
+
 - Follow existing code patterns; keep under 100 lines changed if possible
 - All work happens in a worktree — never modify the main working tree
 - **No AI attribution**: never mention Claude, AI, LLM, or similar in commits, PR title, PR body, code comments, or CHANGELOG entries
