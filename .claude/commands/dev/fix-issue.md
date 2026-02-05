@@ -51,6 +51,23 @@ echo "Pre-flight OK"
 - Read related code to understand the problem
 - Identify the root cause
 
+### 1b. Validate the Bug
+
+Before investing time, determine if the issue is a **real bug** or user error. Check:
+
+1. **Misconfiguration?** — Is the user missing a required config key, using a wrong path, or mixing up profiles? Read the relevant config schema and docs.
+2. **User error?** — Are they using the CLI incorrectly, passing wrong flags, or misunderstanding expected behavior?
+3. **Environment issue?** — Is it specific to an unsupported platform, an old Node version, or a third-party dependency conflict?
+4. **Already works as designed?** — Is the reported behavior actually intentional? Check if docs describe it.
+
+**Reproduce mentally or via code reading:** Trace the reported code path. Does the error actually happen in the code, or is the user's description inconsistent with what the code does?
+
+**Verdict:**
+
+- **Real bug** → Proceed to Step 2
+- **Not a bug** → Stop. Report findings to the user: what the actual cause is, and suggest they comment on the issue with a workaround or close it
+- **Unclear** → Ask the user before proceeding. Do not start a worktree for an unvalidated issue.
+
 ### 2. Search Upstream for Duplicates & Existing Fixes
 
 Before starting any work, search `openclaw/openclaw` for prior art:
