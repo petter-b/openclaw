@@ -59,6 +59,7 @@ Before investing time, determine if the issue is a **real bug** or user error. C
 2. **User error?** — Are they using the CLI incorrectly, passing wrong flags, or misunderstanding expected behavior?
 3. **Environment issue?** — Is it specific to an unsupported platform, an old Node version, or a third-party dependency conflict?
 4. **Already works as designed?** — Is the reported behavior actually intentional? Check if docs describe it.
+5. **Already fixed upstream?** — Check git history: `git log --oneline --since="<issue-date>" -- <suspected-files>`
 
 **Reproduce mentally or via code reading:** Trace the reported code path. Does the error actually happen in the code, or is the user's description inconsistent with what the code does?
 
@@ -66,7 +67,7 @@ Before investing time, determine if the issue is a **real bug** or user error. C
 
 - **Real bug** → Proceed to Step 2
 - **Not a bug** → Stop. Report findings to the user: what the actual cause is, and suggest they comment on the issue with a workaround or close it
-- **Unclear** → Ask the user before proceeding. Do not start a worktree for an unvalidated issue.
+- **Unclear** → Ask the user before proceeding (includes cases needing live reproduction). Do not start a worktree for an unvalidated issue.
 
 ### 2. Search Upstream for Duplicates & Existing Fixes
 
