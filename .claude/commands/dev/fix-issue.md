@@ -24,6 +24,7 @@ Fix an issue and submit a draft PR to openclaw/openclaw.
 - `openclaw/openclaw#123` → explicit upstream
 - `petter-b/openclaw#123` → fork repo
 - `petter-b/openclaw-dev#123` → dev repo
+- `https://github.com/OWNER/REPO/issues/N` → full URL (extract OWNER/REPO and N)
 
 Parse `$1` to determine `REPO` and `ISSUE`. Default `REPO` to `openclaw/openclaw`.
 
@@ -77,17 +78,41 @@ cd $WORKTREE && pnpm install
 
 Fix only this issue — no unrelated changes.
 
-- **Red:** Write a test that reproduces the bug. Run `pnpm test` in the worktree and confirm it **fails**.
-- **Green:** Write minimal code to make the test pass. Run `pnpm test` until green.
+Use **targeted test runs** for fast Red/Green feedback (full suite runs in the gate):
+
+```bash
+cd $WORKTREE && npx vitest run <test-file> --reporter=verbose
+```
+
+- **Red:** Write a test that reproduces the bug. Run the specific test file and confirm it **fails**.
+- **Green:** Write minimal code to make the test pass. Run the specific test file until green.
 - **Refactor:** Review with KISS/YAGNI lens — can anything be removed rather than added? Inline single-use helpers, delete dead code. No unrelated cleanup.
+
+**Test isolation for multi-layer fixes:** If the fix involves multiple defensive layers (e.g., a reachability guard *and* a `.catch()`), write separate tests for each layer. A single test can easily pass for the wrong reason — e.g., if a mock rejects a function that the guard already prevents from being called, the `.catch()` is never exercised even though the test *appears* to cover it.
+
+Split into independent tests:
+- **Guard test:** verify the dangerous call is never made when the guard is active (e.g., `expect(fn).not.toHaveBeenCalled()`)
+- **Catch test:** mock the guard to allow the call through, *then* reject — verify the error is handled gracefully
 
 ### 5. Quality Gate & Commit
 
 Run the full gate inside the worktree:
 
 ```bash
-cd $WORKTREE && pnpm check && pnpm build && pnpm test
+cd $WORKTREE && pnpm build && pnpm check && pnpm test
 ```
+
+**Build first** — catches type errors early. Then lint, then tests.
+
+**Pre-existing lint failures:** `pnpm check` may report pre-existing lint errors in extension packages. If the gate fails on lint, verify no **new** errors in changed files:
+
+```bash
+npx oxlint --type-aware <changed-file-1> <changed-file-2> ...
+```
+
+If all errors are pre-existing (not in your changed files), the gate passes.
+
+**Agent note:** Do not run `pnpm test` with output pipes (`| tail`, `| grep`) in background mode — the pipe stalls. Run without pipes for background tasks, or use foreground execution.
 
 Fix any issues before proceeding.
 
@@ -117,9 +142,16 @@ Read each changed file and its surrounding code. Review for:
 3. KISS/YAGNI: is anything over-engineered or unnecessary?
 4. Project patterns: does it follow existing conventions?
 5. No AI mentions: commits, comments, and code must not reference Claude, AI, LLM, or similar
-6. Test adequacy:
+6. Error handling quality:
+   - Are catches overly broad? (blanket `.catch(() => undefined)` can swallow actionable config errors)
+   - Would specific error types be safer, or does a guard make the broad catch acceptable?
+   - Should caught errors be logged at debug level for observability?
+   - Cross-check: read the functions being called to see what errors they can throw
+7. Test adequacy:
    - Does the test reproduce the original bug?
    - Are edge cases covered?
+   - If multiple defensive layers exist (guard + catch), are they tested independently?
+   - Mock verification: do mocks actually exercise the intended code path? (A mock that rejects a function the guard prevents from being called gives false confidence — the test passes for the wrong reason.)
    - Is the test minimal and clear?
    - Would it catch regressions?
 
@@ -137,7 +169,14 @@ Report:
 
 ### 7. Squash, Push & Submit Draft PR
 
-All commands run inside the worktree. Create a clean PR branch with a single squashed commit:
+All commands run inside the worktree. Create a clean PR branch with a single squashed commit.
+
+**PR branch naming:**
+- Derive a short kebab-case slug from the issue title (3-5 words max, e.g. `status-deep-gateway-crash`).
+- If `IS_UPSTREAM`: `fix/$ISSUE-$SLUG` (e.g. `fix/8392-status-deep-crash`)
+- Otherwise: `fix/$SLUG` (e.g. `fix/status-deep-gateway-crash`)
+
+The issue number is only included when it references the upstream repo where the PR is submitted — otherwise it would be meaningless.
 
 ```bash
 cd $WORKTREE
@@ -145,23 +184,28 @@ cd $WORKTREE
 # Ensure upstream ref is fresh
 git fetch upstream
 
-# Create PR branch from upstream/main
-git checkout -b pr/fix-$ISSUE upstream/main
+# Create PR branch from upstream/main (use naming convention above)
+git checkout -b $PR_BRANCH upstream/main
 
 # Squash all working branch commits into one
 git merge --squash fix-$ISSUE
 
-# Single clean commit — only include (#$ISSUE) if IS_UPSTREAM
-scripts/committer "fix: handle nil channel in routing lookup" .
-# ↑ Write a real description for the actual fix
+# Single clean commit — list changed files explicitly (committer rejects ".")
+# Only include (#$ISSUE) in the message if IS_UPSTREAM
+scripts/committer "fix: handle nil channel in routing lookup" CHANGELOG.md src/path/to/changed.ts src/path/to/changed.test.ts
+# ↑ Write a real description for the actual fix; list all changed files
+
+# Re-run gate on the PR branch — the squash rebased onto fresh upstream/main,
+# which may have introduced conflicts or semantic breakage
+pnpm build && pnpm test
 
 # Push PR branch to fork (petter-b/openclaw)
-git push fork pr/fix-$ISSUE
+git push fork $PR_BRANCH
 
 # Submit draft PR against upstream — only include issue ref if IS_UPSTREAM
 gh pr create \
   --repo openclaw/openclaw \
-  --head petter-b:pr/fix-$ISSUE \
+  --head petter-b:$PR_BRANCH \
   --base main \
   --draft \
   --title "fix: description" \
@@ -183,15 +227,27 @@ EOF
 
 **Important:** The PR is created as a **draft**. The user will manually mark it as "ready for review".
 
-The worktree is left in place for future reference. Clean up after the PR is merged: `git worktree remove .worktrees/fix-$ISSUE`
+### 8. Respond to Automated Review Feedback
+
+After submission, automated reviewers (e.g., Greptile) may flag concerns. When this happens:
+
+1. **Evaluate**: Is the concern valid, mitigated by context, or a false positive?
+2. **Respond on the PR** with the "acknowledge, contextualize, offer" pattern:
+   - Acknowledge the concern (don't dismiss it)
+   - Explain why the current approach is acceptable (cite guards, precedent across the codebase, etc.)
+   - Offer a compromise if reasonable (e.g., "happy to add a debug log if desired")
+3. **If the concern reveals a real gap**, fix it in the worktree, re-run the gate, force-push the PR branch, and note the update.
+
+The worktree is left in place for future reference. Clean up after the PR is merged: `git worktree remove .worktrees/fix-$ISSUE` and `git branch -d fix-$ISSUE $PR_BRANCH`
 
 ## Deliverables
 1. Root cause identified
-2. Test file and case added
+2. Test file and case added (with independent tests per defensive layer where applicable)
 3. Implementation summary
 4. Gate status: PASS
 5. Review status: PASS
 6. Draft PR URL on openclaw/openclaw
+7. Automated review feedback addressed (if any)
 
 ## Constraints
 - Follow existing code patterns; keep under 100 lines changed if possible
