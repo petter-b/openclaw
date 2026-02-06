@@ -69,6 +69,9 @@ Before investing time, determine if the issue is a **real bug** or user error. C
 3. **Environment issue?** — Is it specific to an unsupported platform, an old Node version, or a third-party dependency conflict?
 4. **Already works as designed?** — Is the reported behavior actually intentional? Check if docs describe it.
 5. **Already fixed upstream?** — Check git history: `git log --oneline --since="<issue-date>" -- <suspected-files>`
+6. **Can't reproduce on main?** — For runtime bugs, try live reproduction using `pnpm openclaw --profile test` (isolated test gateway). If it works correctly:
+   - Check if fix is in reporter's version: `git log v<reporter-version>..HEAD --oneline -- <suspected-files>`
+   - Compare exact error message format against patterns in code (e.g., `ERROR_PATTERNS` in error classification)
 
 **Reproduce mentally or via code reading:** Trace the reported code path. Does the error actually happen in the code, or is the user's description inconsistent with what the code does?
 
@@ -76,6 +79,7 @@ Before investing time, determine if the issue is a **real bug** or user error. C
 
 - **Real bug** → Proceed to Step 2
 - **Not a bug** → Stop. Report findings to the user: what the actual cause is, and suggest they comment on the issue with a workaround or close it
+- **Can't reproduce** → Stop. Comment on the issue asking for: exact version, full error message, and reproduction steps. Do not start a worktree.
 - **Unclear** → Ask the user before proceeding (includes cases needing live reproduction). Do not start a worktree for an unvalidated issue.
 
 ### 1c. Research Existing Patterns
