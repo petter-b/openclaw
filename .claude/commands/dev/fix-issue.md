@@ -320,6 +320,14 @@ After submission, automated reviewers (e.g., Greptile) may flag concerns. When t
    - Offer a compromise if reasonable (e.g., "happy to add a debug log if desired")
 3. **If the concern reveals a real gap**, fix it in the worktree, re-run the gate, force-push the PR branch, and note the update.
 
+**Worktree gone?** If returning to address feedback and the worktree was deleted, recreate it from the PR branch:
+
+```bash
+git fetch fork $PR_BRANCH && git worktree add .worktrees/fix-$ISSUE fork/$PR_BRANCH
+```
+
+Then amend the existing commit (not a new one) to keep history clean for squash-merge.
+
 The worktree is left in place for future reference. Clean up after the PR is merged: `git worktree remove .worktrees/fix-$ISSUE` and `git branch -d fix-$ISSUE $PR_BRANCH`
 
 ## Deliverables
