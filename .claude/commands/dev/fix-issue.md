@@ -83,7 +83,7 @@ gh search prs --repo openclaw/openclaw "<keywords from issue>"
 
 Check the results:
 
-- **Duplicate issue exists?** → Link it and note in deliverables. If upstream already tracks this, the PR should reference their issue number instead.
+- **Duplicate issue exists?** → Link it and note in deliverables. If upstream already tracks this, **use the upstream issue number** for worktree naming, PR branch naming, and all issue references going forward (e.g., if fixing `petter-b/openclaw-dev#1` and upstream duplicate is `openclaw/openclaw#5790`, use `5790` as `$ISSUE`).
 - **Open PR already fixes it?** → Stop. Report the existing PR to the user.
 - **Merged PR already fixed it?** → Check if the fix is on `upstream/main`. If so, stop — the issue is already resolved. If not yet released, note it.
 - **Nothing found** → Proceed.
@@ -110,6 +110,15 @@ cd $WORKTREE && pnpm install
 ### 4. TDD Cycle
 
 Fix only this issue — no unrelated changes.
+
+**Before writing any test, trace the code path:**
+
+1. Start from the CLI entry point (e.g., `models set` → `src/commands/models/set.ts`)
+2. Follow function calls to where the bug actually occurs
+3. Identify the **exact file** where the fix will be made
+4. Write tests in that file's corresponding `*.test.ts`
+
+This prevents writing tests that pass for the wrong reason (e.g., testing fallback logic when the bug is in model resolution).
 
 Use **targeted test runs** for fast Red/Green feedback (full suite runs in the gate):
 
@@ -152,6 +161,14 @@ npx oxlint --type-aware <changed-file-1> <changed-file-2> ...
 If all errors are pre-existing (not in your changed files), the gate passes.
 
 **Agent note:** Do not run `pnpm test` with output pipes (`| tail`, `| grep`) in background mode — the pipe stalls. Run without pipes for background tasks, or use foreground execution.
+
+**Pre-existing test failures:** The full test suite may have pre-existing failures unrelated to the fix. If `pnpm test` fails, first run targeted tests on changed files only:
+
+```bash
+cd $WORKTREE && npx vitest run <changed-test-file-1> <changed-test-file-2> --reporter=verbose
+```
+
+If targeted tests pass but the full suite fails, check whether failures are in unrelated files. If so, the gate passes for this PR.
 
 Fix any issues before proceeding.
 
