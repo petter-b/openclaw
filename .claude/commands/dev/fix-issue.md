@@ -51,6 +51,15 @@ echo "Pre-flight OK"
 - Read related code to understand the problem
 - Identify the root cause
 
+**If the reference is a PR (not an issue):**
+
+This is likely a "fix review feedback" scenario, not a fresh bug:
+
+- Read PR comments/reviews: `gh pr view $NUM --repo $REPO --comments`
+- The "root cause" is the reviewer's concern, not a bug report
+- Skip the duplicate search (Step 2) — the PR _is_ the fix attempt
+- The worktree may already exist from the original PR work
+
 ### 1b. Validate the Bug
 
 Before investing time, determine if the issue is a **real bug** or user error. Check:
@@ -68,6 +77,23 @@ Before investing time, determine if the issue is a **real bug** or user error. C
 - **Real bug** → Proceed to Step 2
 - **Not a bug** → Stop. Report findings to the user: what the actual cause is, and suggest they comment on the issue with a workaround or close it
 - **Unclear** → Ask the user before proceeding (includes cases needing live reproduction). Do not start a worktree for an unvalidated issue.
+
+### 1c. Research Existing Patterns
+
+Before implementing a fix, search the codebase for similar patterns:
+
+```bash
+# Find similar error handling, guards, or patterns in related files
+rg "pattern-keyword" src/ --type ts -C 3
+```
+
+Look for:
+
+- How similar code paths handle errors (e.g., `.catch(() => undefined)` vs `.catch((err) => ({ error: String(err) }))`)
+- Guard conditions used elsewhere (e.g., `gatewayReachable` checks before gateway calls)
+- Return type patterns for functions that can fail
+
+**Why this matters:** Matching existing patterns ensures consistency and avoids rework during review. In PR #9091, the initial fix used `runtime.error()` logging, but `status-all.ts` already had a better pattern (capturing errors in return values) — discovering this early would have saved a restart.
 
 ### 2. Search Upstream for Duplicates & Existing Fixes
 
@@ -312,3 +338,4 @@ The worktree is left in place for future reference. Clean up after the PR is mer
 - All work happens in a worktree — never modify the main working tree
 - **No AI attribution**: never mention Claude, AI, LLM, or similar in commits, PR title, PR body, code comments, or CHANGELOG entries
 - **Issue references are conditional**: only reference `#$ISSUE` in PR-facing content when `IS_UPSTREAM`
+- **No git stash**: never use `git stash` — it creates permission issues and complicates multi-agent workflows. If you need to test whether failures are pre-existing, use `git diff` to save changes, `git checkout .` to test clean state, then reapply via `git apply`
