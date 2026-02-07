@@ -56,47 +56,48 @@ build_mac_release_worktree() {
   fi
   echo ""
 
-  # Navigate to worktree
-  cd "$LATEST_DIR"
-  echo "📍 Working directory: $(pwd)"
-  echo ""
-
-  # Initialize submodules (required for Peekaboo and its dependencies)
-  if [[ ! -d "Peekaboo/Core/PeekabooCore" ]]; then
-    echo "📦 Initializing submodules..."
-    git submodule update --init --recursive
+  # Use subshell to prevent accidental state changes in main repo
+  (
+    echo "📍 Working directory: $LATEST_DIR"
     echo ""
-  fi
 
-  # Apply hotfixes if requested
-  if [[ "$APPLY_HOTFIXES" == "true" ]]; then
-    # Apply fixes using the smart apply script
-    # This auto-detects which fixes are needed based on what's already in the target
-    if [[ -f "$REPO_ROOT/scripts/apply-release-fixes.sh" ]]; then
-      "$REPO_ROOT/scripts/apply-release-fixes.sh"
-      echo ""
-    else
-      echo "⚠️  apply-release-fixes.sh not found, skipping fix application"
+    # Initialize submodules (required for Peekaboo and its dependencies)
+    if [[ ! -d "$LATEST_DIR/Peekaboo/Core/PeekabooCore" ]]; then
+      echo "📦 Initializing submodules..."
+      git -C "$LATEST_DIR" submodule update --init --recursive
       echo ""
     fi
-  else
-    echo "ℹ️  Skipping hotfix application (clean build)"
-    echo ""
-  fi
 
-  # Install dependencies if needed
-  if [[ ! -d "node_modules" ]]; then
-    echo "📦 Installing dependencies..."
-    pnpm self-update
-    pnpm install
-    echo ""
-  fi
+    # Apply hotfixes if requested
+    if [[ "$APPLY_HOTFIXES" == "true" ]]; then
+      # Apply fixes using the smart apply script
+      # This auto-detects which fixes are needed based on what's already in the target
+      if [[ -f "$REPO_ROOT/scripts/apply-release-fixes.sh" ]]; then
+        (cd "$LATEST_DIR" && "$REPO_ROOT/scripts/apply-release-fixes.sh")
+        echo ""
+      else
+        echo "⚠️  apply-release-fixes.sh not found, skipping fix application"
+        echo ""
+      fi
+    else
+      echo "ℹ️  Skipping hotfix application (clean build)"
+      echo ""
+    fi
 
-  # Build
-  echo "🔨 Building app..."
-  BUILD_ARCHS="arm64" \
-  DISABLE_LIBRARY_VALIDATION=1 \
-  ./scripts/package-mac-app.sh
+    # Install dependencies if needed
+    if [[ ! -d "$LATEST_DIR/node_modules" ]]; then
+      echo "📦 Installing dependencies..."
+      (cd "$LATEST_DIR" && pnpm self-update && pnpm install)
+      echo ""
+    fi
+
+    # Build
+    echo "🔨 Building app..."
+    (cd "$LATEST_DIR" && \
+     BUILD_ARCHS="arm64" \
+     DISABLE_LIBRARY_VALIDATION=1 \
+     ./scripts/package-mac-app.sh)
+  )
 
   echo ""
   if [[ "$APPLY_HOTFIXES" == "true" ]]; then
