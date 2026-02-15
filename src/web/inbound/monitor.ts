@@ -22,6 +22,8 @@ import {
 import { downloadInboundMedia } from "./media.js";
 import { createWebSendApi } from "./send-api.js";
 
+const HANDLER_ERROR_TEXT = "⚠️ Something went wrong processing your message. Please try again.";
+
 export async function monitorWebInbox(options: {
   verbose: boolean;
   accountId: string;
@@ -107,9 +109,13 @@ export async function monitorWebInbox(options: {
       };
       await options.onMessage(combinedMessage);
     },
-    onError: (err) => {
+    onError: (err, items) => {
       inboundLogger.error({ error: String(err) }, "failed handling inbound web message");
       inboundConsoleLog.error(`Failed handling inbound web message: ${String(err)}`);
+      const reply = items[0]?.reply;
+      if (reply) {
+        void reply(HANDLER_ERROR_TEXT).catch(() => {});
+      }
     },
   });
   const groupMetaCache = new Map<
@@ -336,10 +342,12 @@ export async function monitorWebInbox(options: {
         void task.catch((err) => {
           inboundLogger.error({ error: String(err) }, "failed handling inbound web message");
           inboundConsoleLog.error(`Failed handling inbound web message: ${String(err)}`);
+          void inboundMessage.reply(HANDLER_ERROR_TEXT).catch(() => {});
         });
       } catch (err) {
         inboundLogger.error({ error: String(err) }, "failed handling inbound web message");
         inboundConsoleLog.error(`Failed handling inbound web message: ${String(err)}`);
+        void inboundMessage.reply(HANDLER_ERROR_TEXT).catch(() => {});
       }
     }
   };
