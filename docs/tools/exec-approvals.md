@@ -233,6 +233,74 @@ These are posted to the agent’s session after the node reports the event.
 Gateway-host exec approvals emit the same lifecycle events when the command finishes (and optionally when running longer than the threshold).
 Approval-gated execs reuse the approval id as the `runId` in these messages for easy correlation.
 
+## Multi-user and multi-node setup
+
+When running a gateway and nodes on different machines — or under different OS users on the
+same machine — each host has its **own** `~/.openclaw/exec-approvals.json`. Both the gateway
+and the target node must allow a command for it to succeed.
+
+### How it works
+
+1. The **gateway** checks its local approvals when deciding what an agent can _request_.
+2. The **node** checks its local approvals when deciding what it will _execute_.
+3. If either side denies the command, the request fails with `SYSTEM_RUN_DENIED`.
+
+### Common failure scenario
+
+A gateway runs as user `alice` and a node runs as user `bob` (or on a different machine):
+
+- Gateway approvals (`/home/alice/.openclaw/exec-approvals.json`): `security: "full"`
+- Node approvals (`/home/bob/.openclaw/exec-approvals.json`): `security: "deny"` (default)
+
+The gateway allows the command, but the node denies it. The error message
+(`SYSTEM_RUN_DENIED: approval required` or `allowlist miss`) does not indicate
+which side rejected — making this hard to diagnose.
+
+### Configuring node approvals
+
+Use the `--node` flag to configure a remote node's exec approvals through the gateway:
+
+```bash
+# View a node's current approvals
+openclaw approvals get --node "node-name"
+
+# Set a node's approvals from a JSON file
+openclaw approvals set --node "node-name" --stdin < approvals.json
+```
+
+Or use the **Control UI → Nodes → Exec approvals** card and select the target node.
+
+### Diagnosing mismatches
+
+Run `openclaw doctor` while the gateway is running. If connected nodes have different
+exec-approvals defaults or per-agent settings than the gateway, doctor will flag the
+mismatch and suggest how to fix it.
+
+### Example: restrict a node to a single agent
+
+```json
+{
+  "version": 1,
+  "defaults": {
+    "security": "deny",
+    "ask": "off"
+  },
+  "agents": {
+    "*": {
+      "security": "deny",
+      "ask": "off"
+    },
+    "macadmin": {
+      "security": "full",
+      "ask": "off"
+    }
+  }
+}
+```
+
+This allows only the `macadmin` agent to execute commands on the node, while denying
+all other agents.
+
 ## Implications
 
 - **full** is powerful; prefer allowlists when possible.
