@@ -11,6 +11,8 @@ import { preflightDiscordMessage } from "./message-handler.preflight.js";
 import { processDiscordMessage } from "./message-handler.process.js";
 import { resolveDiscordMessageText } from "./message-utils.js";
 
+const HANDLER_ERROR_TEXT = "⚠️ Something went wrong processing your message. Please try again.";
+
 type DiscordMessageHandlerParams = Omit<
   DiscordMessagePreflightParams,
   "ackReactionScope" | "groupPolicy" | "data" | "client"
@@ -113,8 +115,21 @@ export function createDiscordMessageHandler(
       }
       await processDiscordMessage(ctx);
     },
-    onError: (err) => {
+    onError: (err, items) => {
       params.runtime.error?.(danger(`discord debounce flush failed: ${String(err)}`));
+      const channelId = items[0]?.data.message?.channelId;
+      if (channelId) {
+        void fetch(`https://discord.com/api/v10/channels/${channelId}/messages`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bot ${params.token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            content: HANDLER_ERROR_TEXT,
+          }),
+        }).catch(() => {});
+      }
     },
   });
 
@@ -123,6 +138,23 @@ export function createDiscordMessageHandler(
       await debouncer.enqueue({ data, client });
     } catch (err) {
       params.runtime.error?.(danger(`handler failed: ${String(err)}`));
+      try {
+        const channelId = data.message?.channelId;
+        if (channelId) {
+          await fetch(`https://discord.com/api/v10/channels/${channelId}/messages`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bot ${params.token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              content: HANDLER_ERROR_TEXT,
+            }),
+          });
+        }
+      } catch {
+        // Best-effort — if even the error reply fails, at least we logged it
+      }
     }
   };
 }

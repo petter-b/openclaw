@@ -42,6 +42,15 @@ import {
 } from "./model-buttons.js";
 import { buildInlineKeyboard } from "./send.js";
 
+/** Build a user-facing error message; ENOSPC gets a specific actionable hint. */
+function buildHandlerErrorText(err: unknown): string {
+  const isNoSpace =
+    err instanceof Error && "code" in err && (err as NodeJS.ErrnoException).code === "ENOSPC";
+  return isNoSpace
+    ? "⚠️ Disk full — the gateway cannot process messages. Free up space and try again."
+    : "⚠️ Something went wrong processing your message. Please try again.";
+}
+
 export const registerTelegramHandlers = ({
   cfg,
   accountId,
@@ -142,8 +151,12 @@ export const registerTelegramHandlers = ({
         messageIdOverride ? { messageIdOverride } : undefined,
       );
     },
-    onError: (err) => {
+    onError: (err, items) => {
       runtime.error?.(danger(`telegram debounce flush failed: ${String(err)}`));
+      const chatId = items[0]?.msg.chat.id;
+      if (chatId) {
+        void bot.api.sendMessage(chatId, buildHandlerErrorText(err)).catch(() => {});
+      }
     },
   });
 
@@ -230,6 +243,14 @@ export const registerTelegramHandlers = ({
       await processMessage(primaryEntry.ctx, allMedia, storeAllowFrom);
     } catch (err) {
       runtime.error?.(danger(`media group handler failed: ${String(err)}`));
+      try {
+        const chatId = entry.messages[0]?.msg.chat.id;
+        if (chatId) {
+          await bot.api.sendMessage(chatId, buildHandlerErrorText(err));
+        }
+      } catch {
+        // Best-effort
+      }
     }
   };
 
@@ -270,6 +291,14 @@ export const registerTelegramHandlers = ({
       );
     } catch (err) {
       runtime.error?.(danger(`text fragment handler failed: ${String(err)}`));
+      try {
+        const chatId = entry.messages[0]?.msg.chat.id;
+        if (chatId) {
+          await bot.api.sendMessage(chatId, buildHandlerErrorText(err));
+        }
+      } catch {
+        // Best-effort
+      }
     }
   };
 
@@ -287,20 +316,21 @@ export const registerTelegramHandlers = ({
   };
 
   bot.on("callback_query", async (ctx) => {
-    const callback = ctx.callbackQuery;
-    if (!callback) {
-      return;
-    }
-    if (shouldSkipUpdate(ctx)) {
-      return;
-    }
-    // Answer immediately to prevent Telegram from retrying while we process
-    await withTelegramApiErrorLogging({
-      operation: "answerCallbackQuery",
-      runtime,
-      fn: () => bot.api.answerCallbackQuery(callback.id),
-    }).catch(() => {});
     try {
+      // Guards inside try so validation failures also trigger the error reply
+      const callback = ctx.callbackQuery;
+      if (!callback) {
+        return;
+      }
+      if (shouldSkipUpdate(ctx)) {
+        return;
+      }
+      // Answer immediately to prevent Telegram from retrying while we process
+      await withTelegramApiErrorLogging({
+        operation: "answerCallbackQuery",
+        runtime,
+        fn: () => bot.api.answerCallbackQuery(callback.id),
+      }).catch(() => {});
       const data = (callback.data ?? "").trim();
       const callbackMessage = callback.message;
       if (!data || !callbackMessage) {
@@ -629,6 +659,11 @@ export const registerTelegramHandlers = ({
       });
     } catch (err) {
       runtime.error?.(danger(`callback handler failed: ${String(err)}`));
+      try {
+        await ctx.reply(buildHandlerErrorText(err));
+      } catch {
+        // Best-effort
+      }
     }
   });
 
@@ -942,6 +977,11 @@ export const registerTelegramHandlers = ({
       });
     } catch (err) {
       runtime.error?.(danger(`handler failed: ${String(err)}`));
+      try {
+        await ctx.reply(buildHandlerErrorText(err));
+      } catch {
+        // Best-effort — if even the error reply fails, at least we logged it
+      }
     }
   });
 };
