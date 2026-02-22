@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Fork-Specific Agent Instructions
 
-Read @.workflow/AGENTS.md for complete workflow documentation.
+Read @../.workflow/AGENTS.md for complete workflow documentation.
 
 ## Tool Usage
 

@@ -2,11 +2,7 @@
 
 **Private fork** (`openclaw-dev`). PRs flow: `dev` → `fork` → `upstream`
 
-**Agent character** You are my no-fluff advisor. Be direct, objective, and honest. Expose blind spots, challenge assumptions, and clearly call out excuses or wasted effort. Be concise and ruthless, no sugar-coating allowed.
-
-Every claim should come with credible citations (URL, DOI, ISBN). Explicitly flag weak evidence. Provide answers as clear bullet points with source links. Eliminate fluff and passive voice. Maintain personality. No additional commentary.
-
-If you do not know, you should be honest about it. If you need more clarity you should ask for it, one question at a time.
+Agent identity: see `~/agent-config/AGENTS.md`.
 
 ## Quick Start
 
@@ -80,97 +76,9 @@ See root `AGENTS.md`. Key: `/dev:gate` before commits, `scripts/committer` for s
 
 ## Shell Scripts (Fork-Only)
 
-**Applies to**:
+Applies to: `.workflow/scripts/`, fork-specific `scripts/` (see `scripts/README.md`), `.claude/` scripts.
 
-- Scripts in `.workflow/scripts/`
-- fork-specific scripts in `scripts/`, see `scripts/README.md`
-- Scripts in `.claude`, e.g. for hooks and skills
-
-### Required Standards
-
-1. **Shebang**: Always use `#!/usr/bin/env bash` (portable, finds bash in PATH)
-
-   ```bash
-   #!/usr/bin/env bash
-   # NOT: #!/bin/bash (assumes fixed location)
-   ```
-
-2. **Error handling**: Always use `set -euo pipefail` at the top
-
-   ```bash
-   #!/usr/bin/env bash
-   set -euo pipefail  # Exit on error, undefined vars, pipe failures
-   ```
-
-3. **Linting**: Always run `shellcheck` before committing
-
-   ```bash
-   shellcheck your-script.sh
-   ```
-
-   - Fix all errors and warnings
-   - Use `# shellcheck disable=SC####` only when necessary, with explanation
-   - Fork-specific linter: `.workflow/scripts/lint-fork-scripts.sh`
-
-### Best Practices (from shellcheck)
-
-1. **Quote variables**: Prevent word splitting and globbing
-
-   ```bash
-   # Good
-   echo "$var"
-   cp "$file" "$dest"
-
-   # Bad - unquoted
-   echo $var
-   cp $file $dest
-   ```
-
-2. **Use [[]] for conditionals**: More robust than [ ]
-
-   ```bash
-   # Good
-   if [[ "$var" == "value" ]]; then
-
-   # Avoid
-   if [ "$var" == "value" ]; then
-   ```
-
-3. **Use $() for command substitution**: More readable than backticks
-
-   ```bash
-   # Good
-   result=$(command)
-
-   # Avoid
-   result=`command`
-   ```
-
-4. **Declare and assign separately**: Avoid masking return values
-
-   ```bash
-   # Good
-   local result
-   result=$(command)
-
-   # Bad - masks command failure
-   local result=$(command)
-   ```
-
-5. **Check command existence**: Before using external commands
-
-   ```bash
-   if ! command -v jq &>/dev/null; then
-     echo "Error: jq is required" >&2
-     exit 1
-   fi
-   ```
-
-### Testing
-
-- Test scripts with different shells if portable: `bash`, `dash`
-- Test error conditions: missing files, invalid input, etc.
-- Use `bash -n script.sh` to check syntax without executing
+Standards: `#!/usr/bin/env bash`, `set -euo pipefail`, pass shellcheck. Fork linter: `.workflow/scripts/lint-fork-scripts.sh`.
 
 ---
 
@@ -273,6 +181,32 @@ pnpm openclaw --profile test configure --section model
 - Port 19001 is reserved (already in use)
 - Profiles are spaced 212 ports apart: 18789 → 19001 → 19213 (see `src/config/port-defaults.ts`)
 - After changing config, restart the gateway for changes to take effect
+
+---
+
+## Learnings & Gotchas
+
+Hard-won insights from past work. Keep this section tight — delete entries once they're obvious or obsolete.
+
+### Testing
+
+- `pnpm test | tail` stalls in background mode — run without pipes or use foreground.
+- Vitest worker limit: use `npx vitest run --maxWorkers=6` (pnpm doesn't forward the flag; `pnpm test --maxWorkers=6` is silently ignored).
+- Multi-layer defensive fixes (guard + catch) need independent tests per layer — a mock that rejects a function the guard prevents from being called gives false confidence.
+- Sub-agent review should check: (a) overly broad error suppression, (b) mock verification — do mocks exercise the intended code path?
+
+### Commits & PRs
+
+- `scripts/committer` rejects `.` as path — always list files explicitly.
+- PR branch naming: `fix/$ISSUE-$SLUG` (upstream) or `fix/$SLUG` (non-upstream).
+- PR body should be concise: 3 lines (root cause, fix, test) — optimized for AI auto-approval.
+- After squash onto fresh `upstream/main`, re-run `pnpm build && pnpm test` before pushing.
+
+### Build Infrastructure
+
+- `.worktrees/latest` is reserved for `/build:mac-clean` — never delete it.
+- Gate order: `pnpm build && pnpm check && pnpm test` (build catches type errors first).
+- `prek` is upstream-internal (not on npm) — `/dev:gate` is the local equivalent.
 
 ---
 
