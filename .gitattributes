@@ -1,4 +1,6 @@
 * text=auto eol=lf
+CLAUDE.md -text
+src/gateway/server-methods/CLAUDE.md -text
 
 # Keep fork-specific files during upstream merges
 CLAUDE.md merge=ours
